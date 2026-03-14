@@ -3,9 +3,10 @@ import pandas as pd
 import plotly.express as px
 import google.generativeai as genai
 from streamlit_image_coordinates import streamlit_image_coordinates
+import streamlit.components.v1 as components
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
-st.set_page_config(page_title="JUST-JEE City Exploration", layout="wide", page_icon="🏙️")
+st.set_page_config(page_title="JUST-JEE City Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
 
 # ใส่ API Key ของคุณที่นี่
 GEMINI_API_KEY = "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8" 
@@ -16,86 +17,22 @@ if GEMINI_API_KEY != "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8":
 else:
     model = None
 
-# --- 2. Custom CSS (Minimal Modern & Image Responsive) ---
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+# --- 2. Navigation Logic & State ---
+if 'view' not in st.session_state: st.session_state.view = 'intro'
+if 'intro_step' not in st.session_state: st.session_state.intro_step = 1
+if 'item' not in st.session_state: st.session_state.item = None
 
-    html, body, [class*="css"] {
-        font-family: 'Prompt', sans-serif;
-    }
-    
-    .stApp {
-        background-color: #FDFDFD;
-    }
+def change_page(v, i=None):
+    st.session_state.view = v
+    st.session_state.item = i
 
-    h1 {
-        color: #0F172A;
-        font-weight: 600;
-        text-align: center;
-        letter-spacing: -1px;
-        margin-top: 2rem;
-        font-size: 2.5rem;
-    }
+def next_intro_step():
+    st.session_state.intro_step += 1
 
-    .img-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px;
-        max-width: 100%;
-        overflow: hidden;
-    }
-    
-    div.stButton > button:first-child {
-        background-color: #FFFFFF;
-        color: #1E293B !important;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        font-weight: 500;
-        padding: 0.5rem 1.5rem;
-        transition: all 0.2s ease;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    
-    div.stButton > button:first-child:hover {
-        border-color: #0F172A;
-        background-color: #F8FAFC;
-        transform: translateY(-1px);
-    }
+def start_app():
+    st.session_state.view = 'map'
 
-    .data-card {
-        background-color: #FFFFFF;
-        border: 1px solid #F1F5F9;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1rem;
-    }
-
-    /* ตกแต่งกล่อง Metric สำหรับจำนวน พรบ. */
-    div[data-testid="metric-container"] {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-    }
-
-    .ai-note {
-        font-size: 0.85rem;
-        color: #94A3B8;
-        margin-top: 3rem;
-        text-align: center;
-        border-top: 1px solid #F1F5F9;
-        padding-top: 1rem;
-    }
-
-    hr { border-top: 1px solid #F1F5F9; margin: 2rem 0; }
-    </style>
-""", unsafe_allow_html=True)
-
-# --- 3. ข้อมูลจำลอง (เพิ่ม Stat พ.ร.บ. และรายละเอียดการโหวต) ---
+# --- 3. ข้อมูลจำลอง ---
 objects_data = {
     "พลังงาน/ไฟฟ้า": {
         "keyword": "ร่าง พ.ร.บ. การประกอบกิจการพลังงาน (ฉบับแก้ไข)",
@@ -163,29 +100,174 @@ regions = {
     "สัตว์เลี้ยง": {"x": (780, 950), "y": (600, 950)},
 }
 
-# --- 5. Navigation Logic ---
-if 'view' not in st.session_state: st.session_state.view = 'map'
-if 'item' not in st.session_state: st.session_state.item = None
-
-def change_page(v, i=None):
-    st.session_state.view = v
-    st.session_state.item = i
-
-# --- 6. ฟังก์ชันสรุปโดย Gemini ---
+# --- 5. ฟังก์ชันสรุปโดย Gemini ---
 def get_ai_summary(keyword):
     if model:
         try:
-            prompt = f"สรุปเนื้อหาสำคัญของ '{keyword}' สำหรับประชาชนทั่วไปใน 3 บรรทัด สไตล์มินิมอลและดูน่าเชื่อถือ"
+            prompt = f"สรุปเนื้อหาสำคัญของ '{keyword}' สำหรับประชาชนทั่วไปใน 3 บรรทัด สไตล์มินิมอล"
             return model.generate_content(prompt).text
         except: return "ขออภัย ระบบ AI ไม่สามารถประมวลผลได้ในขณะนี้"
     return "โปรดตั้งค่า API Key เพื่อเปิดใช้งานบทสรุปจาก AI"
 
-# --- 7. การแสดงผล ---
-if st.session_state.view == 'map':
-    st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 2rem;'>เลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+# --- 6. พื้นที่บีบอัด Padding ของ Streamlit (ทำให้ Fit จอ) ---
+st.markdown("""
+    <style>
+        /* ลบขอบและระยะห่างเริ่มต้นของ Streamlit ออกให้หมด */
+        .block-container {
+            padding-top: 1rem;
+            padding-bottom: 0rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            max-width: 100%;
+        }
+        header {visibility: hidden;}
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
+# --- 7. ฟังก์ชันวาดหน้า Intro ---
+# --- 7. ฟังก์ชันวาดหน้า Intro ---
+def render_intro_view():
+    step = st.session_state.intro_step
     
-    _, col_img, _ = st.columns([0.5, 9, 0.5])
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+        html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
+        .stApp { background-color: #0F172A; color: #FFFFFF; }
+        
+        /* ซ่อน Header/Footer และบังคับให้คอนเทนเนอร์หลักของ Streamlit อยู่ตรงกลางจอ 100% */
+        [data-testid="stHeader"], footer { visibility: hidden; }
+        .block-container {
+            height: 100vh !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 100px;
+            max-width: 100% !important;
+            overflow: hidden !important; /* ปิดการ Scroll */
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .intro-container {
+            display: flex; flex-direction: column; justify-content: center; 
+            align-items: center; text-align: center; width: 100%; padding: 0 10%;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        /* ปรับขนาดตัวอักษรให้พอดีกับหน้าจอ */
+        .intro-hook { font-size: 2.5rem; font-weight: 600; color: #E2E8F0; margin-bottom: 1rem; line-height: 1.4; }
+        .intro-text { font-size: 1.4rem; color: #94A3B8; line-height: 1.6; margin-bottom: 2rem; font-weight: 300; }
+        .highlight { color: #3B82F6; font-weight: 500; }
+        .warning-highlight { color: #F59E0B; font-weight: 500; }
+        
+        div.stButton > button:first-child {
+            background-color: transparent; border: 1px solid #475569; color: #E2E8F0 !important;
+            border-radius: 50px; padding: 10px 35px; font-size: 1.1rem; transition: 0.3s;
+        }
+        div.stButton > button:first-child:hover { background-color: #3B82F6; border-color: #3B82F6; color: white !important; }
+        
+        .btn-start div.stButton > button:first-child {
+            background-color: #3B82F6; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    components.html("""
+        <script>
+        const doc = window.parent.document;
+        doc.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                e.preventDefault(); 
+                const buttons = doc.querySelectorAll('.stButton button');
+                if (buttons.length > 0) { buttons[0].click(); }
+            }
+        });
+        </script>
+    """, height=0, width=0)
+
+    st.markdown('<div class="intro-container">', unsafe_allow_html=True)
+    
+    if step == 1:
+        st.markdown('<div class="intro-hook">"กฎหมายไม่ได้อยู่แค่ในรัฐสภา...<br>แต่มันซ่อนอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span>"</div>', unsafe_allow_html=True)
+        st.markdown('<div class="intro-text">เคยสงสัยไหมว่า... แสงสว่างจากหลอดไฟ ถนนที่คุณเดิน<br>หรือแม้แต่อาหารจานโปรด มีกฎหมายอะไรควบคุมอยู่?</div>', unsafe_allow_html=True)
+        st.button("กด Spacebar เพื่อไปต่อ ➔", on_click=next_intro_step)
+        
+    elif step == 2:
+        st.markdown('<div class="intro-hook">ทุกตารางเมตรที่คุณเหยียบ<br>ล้วนถูกขับเคลื่อนด้วย <span class="warning-highlight">"กฎหมาย"</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว และไม่ใช่แค่กระดาษในสภา<br>แต่มันคือตัวกำหนดคุณภาพชีวิต ที่ถูกชี้ชะตาด้วย <b>"คะแนนโหวต"</b></div>', unsafe_allow_html=True)
+        st.button("กด Spacebar เพื่อไปต่อ ➔", on_click=next_intro_step, key="step2")
+        
+    elif step == 3:
+        st.markdown('<div class="intro-hook">ทีม I am sorry จั๊กจี้หัวใจ<br>ขอพาคุณทำความเข้าใจกฎหมายผ่านชีวิตจริง</div>', unsafe_allow_html=True)
+        st.markdown('<div class="intro-text">ยินดีต้อนรับสู่ <b>JUST-JEE CITY</b> แผนที่กฎหมายในชีวิตประจำวัน...<br><br><span style="color:white; font-size:1.8rem; font-weight:500;">เมืองที่คุณอยู่ ถูกสร้างขึ้นมาจากเสียงโหวตของใคร?</span></div>', unsafe_allow_html=True)
+        
+        st.markdown('<div class="btn-start">', unsafe_allow_html=True)
+        st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=start_app, key="start")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- 8. CSS สำหรับหน้าหลัก (แผนที่และกราฟ) ---
+def apply_main_css():
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+        html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
+        .stApp { background-color: #FDFDFD; color: #000; }
+        
+        h1 { color: #0F172A; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2rem; margin-bottom: 0.5rem;}
+        h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #1E293B;}
+        
+        .img-container { display: flex; justify-content: center; align-items: center; max-height: 70vh; overflow: hidden; }
+        
+        div.stButton > button:first-child {
+            background-color: #FFFFFF; color: #1E293B !important; border: 1px solid #E2E8F0;
+            border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem;
+        }
+        
+        /* กระชับการ์ดข้อมูล */
+        .data-card {
+            background-color: #FFFFFF; border: 1px solid #F1F5F9; border-radius: 8px;
+            padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        /* กระชับ Metrics */
+        div[data-testid="metric-container"] {
+            background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;
+            padding: 5px; text-align: center; margin-bottom: 0.5rem;
+        }
+        div[data-testid="stMetricValue"] { font-size: 1.4rem; }
+        
+        /* กระชับ AI Report */
+        .ai-report-box {
+            background-color: #F8FAFC; border-left: 4px solid #3B82F6; 
+            padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem;
+        }
+        .ai-report-box p { font-size: 0.95rem; line-height: 1.5; margin: 0; }
+        
+        .ai-note { font-size: 0.75rem; color: #94A3B8; text-align: center; margin-top: 0.5rem; }
+        </style>
+    """, unsafe_allow_html=True)
+
+# --- 9. การแสดงผล (Main Controller) ---
+if st.session_state.view == 'intro':
+    render_intro_view()
+
+elif st.session_state.view == 'map':
+    apply_main_css()
+    st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1rem; margin-bottom: 0.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+    
+    # ปรับสัดส่วน Columns บีบรูปให้เล็กลง เพื่อไม่ให้รูปสูงล้นจอ
+    _, col_img, _ = st.columns([1.5, 7, 1.5]) 
     with col_img:
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
         value = streamlit_image_coordinates("city.png", key="map")
@@ -199,71 +281,59 @@ if st.session_state.view == 'map':
                     st.rerun()
 
 elif st.session_state.view == 'dash':
+    apply_main_css()
     item = st.session_state.item
     data = objects_data.get(item, list(objects_data.values())[0])
     
-    # 1. ปุ่มย้อนกลับ
-    col_nav, _ = st.columns([1, 4])
-    with col_nav:
-        st.button("← BACK TO MAP", on_click=change_page, args=('map',))
+    # 1. แถบ Header: นำปุ่มย้อนกลับ และ ชื่อหัวข้อมาไว้บรรทัดเดียวกัน เพื่อประหยัดพื้นที่
+    col_title, col_btn = st.columns([5, 1])
+    with col_title:
+        st.markdown(f"<div class='data-card'><div style='font-size: 1.2rem; font-weight: 600;'>ประเด็น: {item}</div><div style='font-size: 0.9rem; color: #64748B;'>{data['keyword']}</div></div>", unsafe_allow_html=True)
+    with col_btn:
+        st.button("← กลับแผนที่", on_click=change_page, args=('map',), use_container_width=True)
     
-    # 2. หัวข้อหลัก
-    st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หัวข้อ: {data['keyword']}</p></div>", unsafe_allow_html=True)
+    # 2. นำ Metrics พ.ร.บ. และ AI Analysis มาวางคู่กัน ซ้าย-ขวา เพื่อประหยัดพื้นที่แนวตั้ง
+    col_stat, col_ai = st.columns([1, 1.5])
     
-    # 3. จำนวนสถิติ พ.ร.บ. (เพิ่มใหม่)
-    st.write("<br>", unsafe_allow_html=True)
-    st.subheader("📄 สถานะร่าง พ.ร.บ. ที่เกี่ยวข้อง")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("จำนวน พ.ร.บ. ทั้งหมด", f"{data['bill_stats']['total']} ฉบับ")
-    c2.metric("ผ่านการเห็นชอบ ✅", f"{data['bill_stats']['passed']} ฉบับ")
-    c3.metric("ไม่ผ่านการเห็นชอบ ❌", f"{data['bill_stats']['failed']} ฉบับ")
+    with col_stat:
+        st.markdown("<h3>📄 สถานะ พ.ร.บ.</h3>", unsafe_allow_html=True)
+        c1, c2, c3 = st.columns(3)
+        c1.metric("ทั้งหมด", f"{data['bill_stats']['total']}")
+        c2.metric("ผ่าน ✅", f"{data['bill_stats']['passed']}")
+        c3.metric("ตก ❌", f"{data['bill_stats']['failed']}")
 
-    # 4. AI Analysis (ย้ายมาก่อนกราฟ)
-    st.write("<br>", unsafe_allow_html=True)
-    st.subheader("✨ AI Analysis Report")
-    with st.spinner("Analyzing data with Gemini 1.5 Flash..."):
-        summary = get_ai_summary(data['keyword'])
-        st.markdown(f"""
-            <div style='background-color: #F8FAFC; border-left: 4px solid #3B82F6; padding: 1.5rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1rem;'>
-                <p style='line-height: 1.8; color: #1E293B; font-size: 1.05rem; margin: 0;'>{summary}</p>
-            </div>
-        """, unsafe_allow_html=True)
+    with col_ai:
+        st.markdown("<h3>✨ AI Analysis</h3>", unsafe_allow_html=True)
+        with st.spinner("Analyzing..."):
+            summary = get_ai_summary(data['keyword'])
+            st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
 
-    st.write("---")
-
-    # 5. กราฟ Visualization แบบแบ่ง เห็นชอบ / ไม่เห็นชอบ / งดออกเสียง
-    st.subheader("🗳️ Vote Distribution by Political Parties (%)")
+    # 3. กราฟ Visualization (ลดความสูงลง)
+    st.markdown("<h3>🗳️ Vote Distribution by Political Parties (%)</h3>", unsafe_allow_html=True)
     
-    # แปลงข้อมูลซ้อนให้อยู่ในรูปแบบตาราง (DataFrame)
     rows = []
     for party, votes in data['vote_details'].items():
         for vote_type, percentage in votes.items():
             rows.append({'Party': party, 'Vote Type': vote_type, 'Percentage': percentage})
     df_votes = pd.DataFrame(rows)
 
-    # จัดเรียงพรรคตามเปอร์เซ็นต์ "เห็นชอบ" จากมากไปน้อย
     party_order = sorted(data['vote_details'].keys(), key=lambda p: data['vote_details'][p]['เห็นชอบ'])
     
-    # สร้าง Stacked Bar Chart ด้วย Plotly
     fig = px.bar(df_votes, x='Percentage', y='Party', color='Vote Type', orientation='h', 
-                 color_discrete_map={
-                     "เห็นชอบ": "#2ECC71",     # สีเขียว
-                     "ไม่เห็นชอบ": "#E74C3C",   # สีแดง
-                     "งดออกเสียง": "#94A3B8"    # สีเทา
-                 },
+                 color_discrete_map={"เห็นชอบ": "#2ECC71", "ไม่เห็นชอบ": "#E74C3C", "งดออกเสียง": "#94A3B8"},
                  text_auto=True)
     
+    # ลดความสูงกราฟลงเหลือ 250 (height=250) และบีบ Margin
     fig.update_layout(
-        xaxis_title="ร้อยละ (%)", yaxis_title="", 
+        xaxis_title="", yaxis_title="", 
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        barmode='stack',  # ให้แท่งกราฟต่อกัน (Stacked)
+        barmode='stack',
         yaxis={'categoryorder': 'array', 'categoryarray': party_order},
-        legend_title_text="ประเภทการลงมติ",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(t=50, b=10, l=10, r=10),
-        height=450
+        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5),
+        margin=dict(t=0, b=0, l=0, r=0),
+        height=240
     )
     st.plotly_chart(fig, use_container_width=True)
     
-    # 6. หมายเหตุ
-    st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ แนะนำให้ตรวจสอบกับเอกสารทางการเพิ่มเติม</div>", unsafe_allow_html=True)
+    # 4. หมายเหตุ
+    st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
