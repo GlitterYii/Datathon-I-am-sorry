@@ -22,7 +22,7 @@ if 'view' not in st.session_state: st.session_state.view = 'intro'
 if 'intro_step' not in st.session_state: st.session_state.intro_step = 1
 if 'item' not in st.session_state: st.session_state.item = None
 
-# 🌟 ดึงค่าจากการคลิกและเปลี่ยนหน้า (ไม่ต้อง st.rerun เพราะเดี๋ยวมันรันลงไปข้างล่างเอง)
+# 🌟 ดึงค่าจากการคลิกและเปลี่ยนหน้า
 if "item" in st.query_params:
     st.session_state.item = st.query_params["item"]
     st.session_state.view = 'dash'
@@ -127,28 +127,6 @@ def render_intro_view():
         </style>
         """, unsafe_allow_html=True)
 
-        st.markdown("""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-        html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
-        .stApp{ background-color:#0F172A; color:#FFFFFF; }
-        .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
-        @keyframes pageEnter{
-            0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
-            100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
-        }
-        .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
-        .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
-        .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
-        .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
-        .highlight{ color:#3B82F6; font-weight:500; }
-        .warning-highlight{ color:#F59E0B; font-weight:500; }
-        div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
-        div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
-        .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
-        </style>
-        """, unsafe_allow_html=True)
-
         components.html("""
         <script>
         const doc = window.parent.document;
@@ -176,10 +154,8 @@ def render_intro_view():
             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
 
-
-            # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
             def handle_start():
-                intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
+                intro_placeholder.empty() 
                 start_app()  
 
             st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
@@ -190,60 +166,14 @@ def render_intro_view():
         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# --- 7. ฟังก์ชันวาดหน้า Intro ---
-
-# def render_intro_view():
-#     # 1. สร้าง Placeholder คลุมไว้ตั้งแต่เริ่ม
-#     intro_placeholder = st.empty()
-    
-#     # 2. เอาเนื้อหาทั้งหมดไปใส่ไว้ใน container ของ placeholder
-#     with intro_placeholder.container():
-#         step = st.session_state.intro_step
-
-#         st.markdown("""
-#         <style>
-#         /* ... ใส่ CSS เดิมของคุณทั้งหมดที่นี่ ... */
-#         </style>
-#         """, unsafe_allow_html=True)
-
-#         components.html("""
-#         <script>
-#         /* ... ใส่ JS เดิมของคุณที่นี่ ... */
-#         </script>
-#         """, height=0, width=0)
-
-#         st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
-
-#         if step == 1:
-#             # ... โค้ดเดิม ...
-#             st.button("Press Space to continue ➔", on_click=next_intro_step)
-#         elif step == 2:
-#             # ... โค้ดเดิม ...
-#             st.button("Press Space to continue ➔", on_click=next_intro_step)
-#         elif step == 3:
-#             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
-#             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
-            
-#             # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
-#             def handle_start():
-#                 intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
-#                 start_app()               # แล้วค่อยเปลี่ยน State ไปหน้า Map
-                
-#             st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
-#             st.caption("Interactive exploration of parliamentary decisions in everyday life")
-
-#         dots = ["○","○","○"]
-#         dots[step-1] = "●"
-#         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
-#         st.markdown("</div>", unsafe_allow_html=True)
-
 def apply_main_css():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
         
-        .stApp { background-color: #F8FBFF; color: #000; } 
+        /* 🌟 เปลี่ยนสีพื้นหลังเป็น Dark Mode */
+        .stApp { background-color: #0F172A; color: #F8FAFC; } 
         
         @keyframes pageTransition { 0% { opacity: 0; transform: translateY(15px); filter: blur(3px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0px); } }
         
@@ -257,14 +187,29 @@ def apply_main_css():
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         
-        h1 { color: #0F172A; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
-        h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #1E293B;}
-        div.stButton > button:first-child { background-color: #FFFFFF; color: #1E293B !important; border: 1px solid #E2E8F0; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
-        .data-card { background-color: #FFFFFF; border: 1px solid #F1F5F9; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        div[data-testid="metric-container"] { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
-        div[data-testid="stMetricValue"] { font-size: 1.4rem; }
-        .ai-report-box { background-color: #FFFFFF; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .ai-note { font-size: 0.75rem; color: #94A3B8; text-align: center; margin-top: 0.5rem; }
+        /* 🌟 ปรับสีข้อความต่างๆ ให้สว่างขึ้น เพื่อให้อ่านได้บนพื้นหลังดำ */
+        h1 { color: #FFFFFF; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
+        h2 { color: #FFFFFF; }
+        h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #F1F5F9;}
+        p { color: #CBD5E1; }
+        
+        /* 🌟 ปรับสีปุ่ม */
+        div.stButton > button:first-child { background-color: #1E293B; color: #F8FAFC !important; border: 1px solid #334155; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
+        div.stButton > button:first-child:hover { background-color: #334155; border-color: #475569; }
+        
+        /* 🌟 ปรับสีกล่องการ์ดข้อมูลต่างๆ */
+        .data-card { background-color: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 10px 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .data-card p { color: #94A3B8; margin: 0; }
+        
+        div[data-testid="metric-container"] { background-color: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
+        div[data-testid="stMetricValue"] { font-size: 1.4rem; color: #FFFFFF; }
+        div[data-testid="stMetricLabel"] { color: #94A3B8; }
+        
+        .ai-report-box { background-color: #1E293B; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); color: #F1F5F9;}
+        .ai-note { font-size: 0.75rem; color: #64748B; text-align: center; margin-top: 0.5rem; }
+        
+        /* 🌟 เปลี่ยนสีกรอบ Dropdown Selectbox */
+        div[data-baseweb="select"] > div { background-color: #1E293B; border-color: #334155; color: #FFFFFF; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -275,7 +220,7 @@ if st.session_state.view == 'intro':
 elif st.session_state.view == 'map':
     apply_main_css()
     st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94A3B8; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
     
     bg_b64 = get_image_base64("city_bg.png") 
     
@@ -284,7 +229,7 @@ elif st.session_state.view == 'map':
     .map-container {{ position: relative; width: 100%; max-width: 1400px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
     .map-container img {{ transition: filter 0.3s ease, transform 0.3s ease; }}
     .map-container:hover .bg-img, .map-container:hover .obj-img {{ filter: grayscale(100%) opacity(0.8); }}
-    .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.3); }}
+    .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.5); }}
     .bg-img {{ width: 100%; height: auto; display: block; }}
     .obj-link {{ position: absolute; display: block; z-index: 10; cursor: pointer; }}
     .obj-img {{ width: 100%; height: auto; object-fit: contain; }}
@@ -296,12 +241,10 @@ elif st.session_state.view == 'map':
     for item_name, conf in objects_config.items():
         obj_b64 = get_image_base64(conf["img"])
         img_src = f"data:image/png;base64,{obj_b64}" if obj_b64 else f"https://via.placeholder.com/150?text={item_name}"
-        # 🌟 เปลี่ยนลิงก์ให้เป็น target="_self" ธรรมดา เพื่อให้ Streamlit จัดการ URL เอง
         html_code += f'<a class="obj-link" href="?item={item_name}" target="_self" style="top: {conf["top"]}; left: {conf["left"]}; width: {conf["width"]};"><img class="obj-img" src="{img_src}" alt="{item_name}"></a>'
         
     html_code += "</div>"
     
-    # 🌟 ฝัง HTML ตรงๆ เข้าไปเลย ไม่สร้าง iframe ซ้อน (ลบคำสั่ง components.html ทิ้งไปแล้ว)
     st.markdown(html_code, unsafe_allow_html=True)
 
 elif st.session_state.view == 'dash':
@@ -314,7 +257,7 @@ elif st.session_state.view == 'dash':
     with col_nav:
         st.button("← BACK TO MAP", on_click=change_page, args=('map',))
     
-    st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หัวข้อหลัก: {data['keyword_default']}</p></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='data-card'><h2>{item}</h2><p>หัวข้อหลัก: {data['keyword_default']}</p></div>", unsafe_allow_html=True)
     
     all_keywords = [data['keyword_default']] + list(data['keywords'].keys())
     all_keywords = list(dict.fromkeys(all_keywords))
@@ -333,7 +276,7 @@ elif st.session_state.view == 'dash':
         st.markdown(f"<h3>✨ AI Analysis: {selected_keyword}</h3>", unsafe_allow_html=True)
         with st.spinner("Analyzing..."):
             summary = get_ai_summary(selected_keyword)
-            st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='ai-report-box'><p style='color: #F1F5F9;'>{summary}</p></div>", unsafe_allow_html=True)
 
     st.write("---")
     st.markdown("<h3>🗳️ Vote Distribution by Political Parties (%)</h3>", unsafe_allow_html=True)
@@ -350,9 +293,11 @@ elif st.session_state.view == 'dash':
                  color_discrete_map={"เห็นชอบ": "#2ECC71", "ไม่เห็นชอบ": "#E74C3C", "งดออกเสียง": "#94A3B8"},
                  text_auto=True)
     
+    # 🌟 ปรับสีข้อความกราฟ Plotly ให้สว่างเข้ากับธีม
     fig.update_layout(
         xaxis_title="ร้อยละ (%)", yaxis_title="", 
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#F8FAFC"), # สีข้อความกราฟ
         barmode='stack',
         yaxis={'categoryorder': 'array', 'categoryarray': party_order},
         legend_title_text="ประเภทการลงมติ",
