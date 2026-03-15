@@ -7,7 +7,7 @@ import base64
 import os
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
-st.set_page_config(page_title="JUST-JEE City Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Politiland Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
 
 GEMINI_API_KEY = "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8" 
 
@@ -151,7 +151,7 @@ def render_intro_view():
             st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
             st.button("Press Space to continue ➔", on_click=next_intro_step)
         elif step == 3:
-            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
 
             def handle_start():
@@ -165,6 +165,53 @@ def render_intro_view():
         dots[step-1] = "●"
         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
+
+# --- 7. ฟังก์ชันวาดหน้า Intro ---
+
+# def render_intro_view():
+#     # 1. สร้าง Placeholder คลุมไว้ตั้งแต่เริ่ม
+#     intro_placeholder = st.empty()
+    
+#     # 2. เอาเนื้อหาทั้งหมดไปใส่ไว้ใน container ของ placeholder
+#     with intro_placeholder.container():
+#         step = st.session_state.intro_step
+
+#         st.markdown("""
+#         <style>
+#         /* ... ใส่ CSS เดิมของคุณทั้งหมดที่นี่ ... */
+#         </style>
+#         """, unsafe_allow_html=True)
+
+#         components.html("""
+#         <script>
+#         /* ... ใส่ JS เดิมของคุณที่นี่ ... */
+#         </script>
+#         """, height=0, width=0)
+
+#         st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+
+#         if step == 1:
+#             # ... โค้ดเดิม ...
+#             st.button("Press Space to continue ➔", on_click=next_intro_step)
+#         elif step == 2:
+#             # ... โค้ดเดิม ...
+#             st.button("Press Space to continue ➔", on_click=next_intro_step)
+#         elif step == 3:
+#             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
+#             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
+            
+#             # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
+#             def handle_start():
+#                 intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
+#                 start_app()               # แล้วค่อยเปลี่ยน State ไปหน้า Map
+                
+#             st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
+#             st.caption("Interactive exploration of parliamentary decisions in everyday life")
+
+#         dots = ["○","○","○"]
+#         dots[step-1] = "●"
+#         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
+#         st.markdown("</div>", unsafe_allow_html=True)
 
 def apply_main_css():
     st.markdown("""
@@ -219,8 +266,8 @@ if st.session_state.view == 'intro':
 
 elif st.session_state.view == 'map':
     apply_main_css()
-    st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94A3B8; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+    st.markdown("<h1>Politiland Exploration</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
     
     bg_b64 = get_image_base64("city_bg.png") 
     
