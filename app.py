@@ -158,92 +158,95 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def render_intro_view():
-    step = st.session_state.intro_step
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-    html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
-    .stApp{ background-color:#0F172A; color:#FFFFFF; }
-    .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
-    @keyframes pageEnter{
-        0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
-        100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
-    }
-    .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
-    .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
-    .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
-    .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
-    .highlight{ color:#3B82F6; font-weight:500; }
-    .warning-highlight{ color:#F59E0B; font-weight:500; }
-    div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
-    div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
-    .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
-    </style>
-    """, unsafe_allow_html=True)
+    intro_placeholder = st.empty()
 
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-    html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
-    .stApp{ background-color:#0F172A; color:#FFFFFF; }
-    .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
-    @keyframes pageEnter{
-        0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
-        100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
-    }
-    .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
-    .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
-    .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
-    .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
-    .highlight{ color:#3B82F6; font-weight:500; }
-    .warning-highlight{ color:#F59E0B; font-weight:500; }
-    div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
-    div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
-    .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
-    </style>
-    """, unsafe_allow_html=True)
-
-    components.html("""
-    <script>
-    const doc = window.parent.document;
-    doc.addEventListener('keydown',function(e){
-        if(e.code === 'Space'){
-            e.preventDefault()
-            const buttons = doc.querySelectorAll('.stButton button')
-            if(buttons.length > 0){ buttons[0].click() }
+    with intro_placeholder.container():
+        step = st.session_state.intro_step
+        st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
+        .stApp{ background-color:#0F172A; color:#FFFFFF; }
+        .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
+        @keyframes pageEnter{
+            0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
+            100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
         }
-    })
-    </script>
-    """,height=0,width=0)
+        .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
+        .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
+        .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
+        .highlight{ color:#3B82F6; font-weight:500; }
+        .warning-highlight{ color:#F59E0B; font-weight:500; }
+        div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
+        div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
+        .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
+        </style>
+        """, unsafe_allow_html=True)
 
-    st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+        st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
+        .stApp{ background-color:#0F172A; color:#FFFFFF; }
+        .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
+        @keyframes pageEnter{
+            0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
+            100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
+        }
+        .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
+        .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
+        .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
+        .highlight{ color:#3B82F6; font-weight:500; }
+        .warning-highlight{ color:#F59E0B; font-weight:500; }
+        div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
+        div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
+        .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
+        </style>
+        """, unsafe_allow_html=True)
 
-    if step == 1:
-        st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
-        st.button("Press Space to continue ➔", on_click=next_intro_step)
-    elif step == 2:
-        st.markdown('<div class="intro-hook">ทุกพื้นที่ของเมือง<br>ถูกขับเคลื่อนด้วย <span class="warning-highlight">กฎหมาย</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
-        st.button("Press Space to continue ➔", on_click=next_intro_step)
-    elif step == 3:
-        st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
+        components.html("""
+        <script>
+        const doc = window.parent.document;
+        doc.addEventListener('keydown',function(e){
+            if(e.code === 'Space'){
+                e.preventDefault()
+                const buttons = doc.querySelectorAll('.stButton button')
+                if(buttons.length > 0){ buttons[0].click() }
+            }
+        })
+        </script>
+        """,height=0,width=0)
+
+        st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+
+        if step == 1:
+            st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
+            st.button("Press Space to continue ➔", on_click=next_intro_step)
+        elif step == 2:
+            st.markdown('<div class="intro-hook">ทุกพื้นที่ของเมือง<br>ถูกขับเคลื่อนด้วย <span class="warning-highlight">กฎหมาย</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
+            st.button("Press Space to continue ➔", on_click=next_intro_step)
+        elif step == 3:
+            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
 
 
-        # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
-        def handle_start():
-            intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
-            start_app()  
+            # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
+            def handle_start():
+                intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
+                start_app()  
 
-        st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=start_app)
-        st.caption("Interactive exploration of parliamentary decisions in everyday life")
+            st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
+            st.caption("Interactive exploration of parliamentary decisions in everyday life")
 
-    dots = ["○","○","○"]
-    dots[step-1] = "●"
-    st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-    
+        dots = ["○","○","○"]
+        dots[step-1] = "●"
+        st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
 # --- 7. ฟังก์ชันวาดหน้า Intro ---
 
 # def render_intro_view():
