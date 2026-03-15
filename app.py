@@ -302,29 +302,34 @@ elif st.session_state.view == 'dash':
         st.write("---")
         st.markdown("<h3>🗳️ Vote Distribution by Political Parties</h3>", unsafe_allow_html=True)
         
-        # 2. จัดเตรียมข้อมูลสำหรับพล็อต (ใช้ logic แบ่งสีเหมือนเดิม แต่ Apply กับ vote_dict ที่ดึงมาใหม่)
+        # 1. จัดเตรียมข้อมูลสำหรับพล็อตแยกเป็น 3 ส่วน
         processed_data = []
-        if isinstance(vote_dict, dict):
+        if isinstance(vote_dict, dict) and vote_dict:
             for party, votes in vote_dict.items():
                 if isinstance(votes, dict):
-                    # รวมคะแนนเห็นด้วย / เห็นชอบ
+                    # ส่วนที่ 1: เห็นด้วย / เห็นชอบ
                     agree = votes.get('เห็นด้วย', 0) + votes.get('เห็นชอบ', 0)
-                    # รวมคะแนนที่ไม่เห็นด้วย ลา ขาด งดออกเสียง
-                    others = votes.get('ลา/ขาด', 0) + votes.get('งดออกเสียง', 0) + votes.get('ไม่ลงคะแนน', 0) + votes.get('ไม่เห็นชอบ', 0)
+                    
+                    # ส่วนที่ 2: ไม่เห็นด้วย / ไม่เห็นชอบ
+                    disagree = votes.get('ไม่เห็นด้วย', 0) + votes.get('ไม่เห็นชอบ', 0)
+                    
+                    # ส่วนที่ 3: งดออกเสียง / ลา / ขาด / ไม่ลงคะแนน
+                    abstain_absent = votes.get('งดออกเสียง', 0) + votes.get('ลา/ขาด', 0) + votes.get('ไม่ลงคะแนน', 0)
                     
                     processed_data.append({
                         'พรรค': party,
                         'เห็นด้วย': agree,
-                        'อื่นๆ (ลา/งด/ไม่เห็นชอบ)': others
+                        'ไม่เห็นด้วย': disagree,
+                        'งดออกเสียง/ลา/ขาด': abstain_absent
                     })
 
-        # 3. สร้างกราฟ
+        # 2. สร้างกราฟ
         if processed_data:
             df_plot = pd.DataFrame(processed_data)
             # เรียงจากพรรคที่เห็นด้วยน้อยไปมาก เพื่อให้พรรคที่โหวตเห็นด้วยเยอะๆ อยู่ด้านบน
             df_plot = df_plot.sort_values(by='เห็นด้วย', ascending=True)
 
-            # กำหนดสี
+            # กำหนดสีพรรคที่โหวต "เห็นด้วย"
             colors_agree = {
                 'ประชาชน': '#FF6600',
                 'ก้าวไกล': '#F47933',
@@ -340,10 +345,13 @@ elif st.session_state.view == 'dash':
 
             fig = go.Figure()
 
-            # แท่งคะแนน "เห็นด้วย" (ใช้สีแยกตามพรรค)
+            # แท่งที่ 1: "เห็นด้วย" (ใช้สีแยกตามพรรค)
             for i, party in enumerate(df_plot['พรรค']):
                 party_row = df_plot[df_plot['พรรค'] == party]
                 color = colors_agree.get(party, default_palette[i % len(default_palette)])
+                
+                # ซ่อนตัวเลข 0 เพื่อไม่ให้กราฟดูรก
+                text_val = [val if val > 0 else "" for val in party_row['เห็นด้วย']]
                 
                 fig.add_trace(go.Bar(
                     y=[party],
@@ -352,19 +360,32 @@ elif st.session_state.view == 'dash':
                     orientation='h',
                     marker=dict(color=color),
                     showlegend=False,
-                    text=party_row['เห็นด้วย'],
+                    text=text_val,
                     textposition='inside'
                 ))
 
-            # แท่งคะแนน "กลุ่มอื่นๆ" (ใช้สีเทาเหมือนกันหมด)
+            # แท่งที่ 2: "ไม่เห็นด้วย" (สีดำ)
+            text_disagree = [val if val > 0 else "" for val in df_plot['ไม่เห็นด้วย']]
             fig.add_trace(go.Bar(
                 y=df_plot['พรรค'],
-                x=df_plot['อื่นๆ (ลา/งด/ไม่เห็นชอบ)'],
-                name="อื่นๆ (ลา/ขาด/งด/ไม่เห็นชอบ)",
+                x=df_plot['ไม่เห็นด้วย'],
+                name="ไม่เห็นด้วย",
                 orientation='h',
-                marker=dict(color='#B0B0B0'),
-                text=df_plot['อื่นๆ (ลา/งด/ไม่เห็นชอบ)'],
-                textposition='outside'
+                marker=dict(color='#000000'), # สีดำ
+                text=text_disagree,
+                textposition='inside'
+            ))
+
+            # แท่งที่ 3: "งดออกเสียง/ลา/ขาด" (สีเทา)
+            text_abstain = [val if val > 0 else "" for val in df_plot['งดออกเสียง/ลา/ขาด']]
+            fig.add_trace(go.Bar(
+                y=df_plot['พรรค'],
+                x=df_plot['งดออกเสียง/ลา/ขาด'],
+                name="งดออกเสียง/ลา/ขาด",
+                orientation='h',
+                marker=dict(color='#B0B0B0'), # สีเทา
+                text=text_abstain,
+                textposition='inside'
             ))
 
             # ปรับแต่งหน้าตากราฟ
@@ -374,7 +395,7 @@ elif st.session_state.view == 'dash':
                 barmode='stack', # ให้แท่งกราฟต่อกันแนวนอน
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 margin=dict(t=50, b=10, l=10, r=10),
-                height=400
+                height=500
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
