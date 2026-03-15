@@ -54,21 +54,22 @@ st.markdown("""
 # --- 4. ข้อมูล 15 วัตถุ ---
 # โครงสร้างสำหรับเก็บไฟล์รูปและพิกัดบนหน้าจอ (แก้ % top/left ให้ตรงกับรูปของคุณ)
 objects_config = {
-    "โรงเรียน": {"img": "school.png", "top": "5%", "left": "5%", "width": "18%"},
-    "รถบัส": {"img": "bus.png", "top": "22%", "left": "30%", "width": "15%"},
-    "โรงงาน": {"img": "factory.png", "top": "10%", "left": "45%", "width": "20%"},
-    "ร้านอาหาร": {"img": "restaurant.png", "top": "30%", "left": "65%", "width": "15%"},
-    "ทะเลและเรือ": {"img": "sea.png", "top": "35%", "left": "80%", "width": "18%"},
-    "โรงพยาบาล": {"img": "hospital.png", "top": "45%", "left": "55%", "width": "18%"},
-    "ร้านสัตว์เลี้ยง": {"img": "petshop.png", "top": "70%", "left": "53%", "width": "15%"},
-    "ศิลปะ": {"img": "art.png", "top": "60%", "left": "20%", "width": "12%"},
+    "โรงเรียน": {"img": "school.png", "top": "7%", "left": "5%", "width": "20%"},
+    "ถนน": {"img": "road.png", "top": "25%", "left": "25%", "width": "15%"},
+    "รถบัส": {"img": "bus.png", "top": "40%", "left": "27%", "width": "10%"},
+    "โรงงาน": {"img": "factory.png", "top": "1%", "left": "40%", "width": "20%"},
+    "ร้านอาหาร": {"img": "restaurant.png", "top": "1%", "left": "60%", "width": "20%"},
+    "ทะเลและเรือ": {"img": "sea.png", "top": "20%", "left": "83%", "width": "18%"},
+    "โรงพยาบาล": {"img": "hospital.png", "top": "43%", "left": "60%", "width": "23%"},
+    "ร้านสัตว์เลี้ยง": {"img": "petshop.png", "top": "70%", "left": "43%", "width": "18%"},
+    "ศิลปะ": {"img": "art.png", "top": "50%", "left": "13%", "width": "15%"},
     "คอมพิวเตอร์": {"img": "computer.png", "top": "80%", "left": "5%", "width": "15%"},
-    "ถนน": {"img": "road.png", "top": "40%", "left": "35%", "width": "20%"},
-    "สวนสาธารณะ": {"img": "park.png", "top": "35%", "left": "5%", "width": "15%"},
-    "คนพิการ": {"img": "wheelchair.png", "top": "78%", "left": "75%", "width": "10%"},
-    "สุราก้าวหน้า": {"img": "drunk.png", "top": "30%", "left": "50%", "width": "10%"},
-    "ความงาม": {"img": "makeup.png", "top": "60%", "left": "5%", "width": "10%"},
+    "สวนสาธารณะ": {"img": "park.png", "top": "25%", "left": "3%", "width": "20%"},
+    "คนพิการ": {"img": "wheelchair.png", "top": "45%", "left": "50%", "width": "10%"},
+    "สุราก้าวหน้า": {"img": "drunk.png", "top": "75%", "left": "63%", "width": "15%"},
+    "ความงาม": {"img": "makeup.png", "top": "73%", "left": "0%", "width": "15%"},
     "พลังงาน": {"img": "power.png", "top": "15%", "left": "65%", "width": "12%"},
+    "คน": {"img": "human.png", "top": "45%", "left": "40%", "width": "12%"},
 }
 
 # (Mock Data สำหรับ 15 หมวด - ระบบจะใช้ค่านี้เป็น Default ถ้าไม่ได้แก้)
