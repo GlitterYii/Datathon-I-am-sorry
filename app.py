@@ -196,6 +196,10 @@ def apply_main_css():
         .ai-report-box { background-color: #1E293B; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); color: #F1F5F9;}
         .ai-note { font-size: 0.75rem; color: #64748B; text-align: center; margin-top: 0.5rem; }
         div[data-baseweb="select"] > div { background-color: #1E293B; border-color: #334155; color: #FFFFFF; }
+        
+        /* สไตล์สำหรับกล่อง Expander ของ Streamlit */
+        .streamlit-expanderHeader { background-color: #1E293B; color: #F8FAFC; border-radius: 8px; }
+        .streamlit-expanderContent { background-color: #0F172A; color: #CBD5E1; border: 1px solid #334155; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;}
         </style>
     """, unsafe_allow_html=True)
 
@@ -256,7 +260,6 @@ elif st.session_state.view == 'dash':
             st.markdown("<h3>📄 สถานะ พ.ร.บ. ที่เกี่ยวข้อง</h3>", unsafe_allow_html=True)
             c1, c2, c3 = st.columns(3)
             
-            # 🌟 ส่วนที่แก้ไข: คำนวณจากคอลัมน์ status ในไฟล์ CSV ของหมวดหมู่นั้นๆ
             total_bills = len(df_filtered)
             passed_bills = len(df_filtered[df_filtered['status'].astype(str).str.contains('ENACTED|บังคับใช้|ออกเป็นกฎหมาย', case=False, na=False)])
             failed_bills = len(df_filtered[df_filtered['status'].astype(str).str.contains('REJECTED|ตกไป', case=False, na=False)])
@@ -270,6 +273,30 @@ elif st.session_state.view == 'dash':
             with st.spinner("Analyzing..."):
                 summary = get_ai_summary(selected_title)
                 st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
+
+        # 🌟 เพิ่มการแสดงผล Rationale (แก้ให้โชว์เลยและตัวใหญ่ขึ้น)
+        rationale_text = row_data.get('rationale', '')
+        if pd.isna(rationale_text) or str(rationale_text).strip() in ["", "nan", "None"]:
+            rationale_text = "ไม่มีข้อมูลเหตุผลสำหรับ พ.ร.บ. ฉบับนี้ในระบบ"
+            
+        # เพิ่มหัวข้อ
+        st.markdown("<h3 style='margin-top: 15px;'>📖 คำอธิบาย</h3>", unsafe_allow_html=True)
+        
+        # แสดงกล่องข้อความทันที พร้อมปรับขนาดตัวอักษร (font-size) ให้ใหญ่ขึ้น
+        st.markdown(f"""
+            <div style='
+                font-size: 1.2rem; 
+                line-height: 1.8; 
+                color: #F8FAFC; 
+                background-color: #1E293B; 
+                padding: 20px; 
+                border-radius: 8px; 
+                border-left: 5px solid #F59E0B;
+                margin-bottom: 20px;
+            '>
+                {rationale_text}
+            </div>
+        """, unsafe_allow_html=True)
 
         # ------------------ ส่วนกราฟ Visualization ------------------
         st.write("---")
