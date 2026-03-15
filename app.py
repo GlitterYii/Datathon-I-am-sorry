@@ -83,10 +83,6 @@ objects_data = {
     "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน"}, "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง"}
 }
 
-for key, val in objects_data.items():
-    if "bill_stats" not in val:
-        val["bill_stats"] = {"total": 12, "passed": 8, "failed": 4}
-
 objects_config = {
     "การศึกษา/โรงเรียน": {"img": "school.png", "top": "7%", "left": "5%", "width": "20%"},
     "ถนน": {"img": "road.png", "top": "25%", "left": "25%", "width": "15%"},
@@ -235,7 +231,6 @@ elif st.session_state.view == 'dash':
     apply_main_css()
     item = st.session_state.item
     target_category = ITEM_TO_CATEGORY.get(item, "ไม่พบหมวดหมู่")
-    data_mock = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
     
     col_nav, _ = st.columns([1, 4])
     with col_nav:
@@ -260,9 +255,15 @@ elif st.session_state.view == 'dash':
         with col_stat:
             st.markdown("<h3>📄 สถานะ พ.ร.บ. ที่เกี่ยวข้อง</h3>", unsafe_allow_html=True)
             c1, c2, c3 = st.columns(3)
-            c1.metric("ทั้งหมด", f"{data_mock['bill_stats']['total']}")
-            c2.metric("ผ่าน ✅", f"{data_mock['bill_stats']['passed']}")
-            c3.metric("ตก ❌", f"{data_mock['bill_stats']['failed']}")
+            
+            # 🌟 ส่วนที่แก้ไข: คำนวณจากคอลัมน์ status ในไฟล์ CSV ของหมวดหมู่นั้นๆ
+            total_bills = len(df_filtered)
+            passed_bills = len(df_filtered[df_filtered['status'].astype(str).str.contains('ENACTED|บังคับใช้|ออกเป็นกฎหมาย', case=False, na=False)])
+            failed_bills = len(df_filtered[df_filtered['status'].astype(str).str.contains('REJECTED|ตกไป', case=False, na=False)])
+            
+            c1.metric("ทั้งหมด", f"{total_bills} ฉบับ")
+            c2.metric("ผ่าน ✅", f"{passed_bills} ฉบับ")
+            c3.metric("ตก ❌", f"{failed_bills} ฉบับ")
 
         with col_ai:
             st.markdown(f"<h3>✨ AI Analysis: สรุปนโยบาย</h3>", unsafe_allow_html=True)
@@ -291,7 +292,6 @@ elif st.session_state.view == 'dash':
             st.write(f"แปลงค่าสำเร็จไหม: {vote_dict}")
 
         import re
-        # ฟังก์ชันสกัดเอาเฉพาะ "ตัวเลข" ออกมาจากข้อความ (แก้ปัญหาติดคำว่า 'เสียง' หรือ 'คน')
         def to_int(val):
             if pd.isna(val) or val is None: return 0
             if isinstance(val, (int, float)): return int(val)
@@ -307,7 +307,6 @@ elif st.session_state.view == 'dash':
         if vote_dict and isinstance(vote_dict, dict):
             for party, votes in vote_dict.items():
                 
-                # ถ้าข้อมูลด้านในถูกซ้อน String ไว้อีกชั้น ให้ระเบิดมันออกมาก่อน
                 if isinstance(votes, str):
                     try: votes = ast.literal_eval(votes)
                     except:
@@ -318,21 +317,17 @@ elif st.session_state.view == 'dash':
                 
                 if isinstance(votes, dict):
                     for k, v in votes.items():
-                        # ปรับเป็นพิมพ์เล็กทั้งหมดเพื่อเช็คภาษาอังกฤษได้ง่ายขึ้น
                         k_str = str(k).strip().lower() 
                         val = to_int(v)
                         
-                        # 🔴 เพิ่มเงื่อนไขจับคำภาษาอังกฤษ (agree, disagree, abstain, absent, no_vote)
                         if k_str in ['เห็นด้วย', 'เห็นชอบ', 'agree']: agree += val
                         elif k_str in ['ไม่เห็นด้วย', 'ไม่เห็นชอบ', 'disagree']: disagree += val
                         elif k_str in ['งดออกเสียง', 'ลา/ขาด', 'ไม่ลงคะแนน', 'ลา', 'ขาด', 'abstain', 'absent', 'no_vote']: abstain += val
                         else:
-                            # ดักจับคำบางส่วนเผื่อพิมพ์ผิด
                             if 'ไม่เห็น' in k_str or 'disagree' in k_str: disagree += val
                             elif 'เห็น' in k_str or 'agree' in k_str: agree += val
                             elif 'งด' in k_str or 'ลา' in k_str or 'ขาด' in k_str or 'abstain' in k_str or 'absent' in k_str: abstain += val
                 
-                # เก็บข้อมูลลง List
                 processed_data.append({
                     'พรรค': str(party).strip(),
                     'เห็นด้วย': agree,
@@ -344,7 +339,6 @@ elif st.session_state.view == 'dash':
         if processed_data:
             df_plot = pd.DataFrame(processed_data)
             
-            # ลบพรรคที่ผลรวมโหวตเป็น 0 ออกไป เพื่อไม่ให้กราฟดูรก
             df_plot['total'] = df_plot['เห็นด้วย'] + df_plot['ไม่เห็นด้วย'] + df_plot['งดออกเสียง/ลา/ขาด']
             df_plot = df_plot[df_plot['total'] > 0]
             
@@ -370,7 +364,6 @@ elif st.session_state.view == 'dash':
             if not df_plot.empty:
                 fig = go.Figure()
 
-                # แท่งที่ 1: "เห็นด้วย" (สีคละตามพรรค)
                 text_agree = [val if val > 0 else "" for val in df_plot['เห็นด้วย']]
                 fig.add_trace(go.Bar(
                     y=df_plot['พรรค'], x=df_plot['เห็นด้วย'], name="เห็นด้วย",
@@ -378,7 +371,6 @@ elif st.session_state.view == 'dash':
                     text=text_agree, textposition='inside'
                 ))
 
-                # แท่งที่ 2: "ไม่เห็นด้วย" (สีดำ)
                 text_disagree = [val if val > 0 else "" for val in df_plot['ไม่เห็นด้วย']]
                 fig.add_trace(go.Bar(
                     y=df_plot['พรรค'], x=df_plot['ไม่เห็นด้วย'], name="ไม่เห็นด้วย",
@@ -386,7 +378,6 @@ elif st.session_state.view == 'dash':
                     text=text_disagree, textposition='inside'
                 ))
 
-                # แท่งที่ 3: "งดออกเสียง/ลา/ขาด" (สีเทา)
                 text_abstain = [val if val > 0 else "" for val in df_plot['งดออกเสียง/ลา/ขาด']]
                 fig.add_trace(go.Bar(
                     y=df_plot['พรรค'], x=df_plot['งดออกเสียง/ลา/ขาด'], name="งดออกเสียง/ลา/ขาด",
