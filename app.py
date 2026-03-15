@@ -9,11 +9,7 @@ import ast
 import plotly.graph_objects as go
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
-<<<<<<< HEAD
 st.set_page_config(page_title="POLITILAND Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
-=======
-st.set_page_config(page_title="Politiland Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
->>>>>>> main
 
 GEMINI_API_KEY = "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8" 
 
@@ -82,7 +78,6 @@ ITEM_TO_CATEGORY = {
 
 # --- 4. ข้อมูลจำลอง (เก็บไว้สำหรับส่วนของจำนวน พ.ร.บ. ที่ยังไม่มีใน CSV) ---
 objects_data = {
-<<<<<<< HEAD
     "คน": {"keyword_default": "อาชีพ"},
     "คนพิการ": {"keyword_default": "คนพิการ"},
     "ยานพาหนะ": {"keyword_default": "จราจร"},
@@ -99,24 +94,6 @@ objects_data = {
     "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน"},
     "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน"},
     "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง"}
-=======
-    "คน": {"keyword_default": "อาชีพ", "keywords": {"อาชีพ": [], "การจ้างงาน": [], "PDPA": [], "สถานะของบุคคล": []}},
-    "คนพิการ": {"keyword_default": "คนพิการ", "keywords": {"คนพิการ": [],"ผู้ทุพลภาพ": [], "กลุ่มเปราะบาง": []}},
-    "ยานพาหนะ": {"keyword_default": "จราจร", "keywords": {"จราจร": [], "ขนส่ง": [], "รถยนต์": []}},
-    "ถนน": {"keyword_default": "ทางหลวง", "keywords": {"ทางหลวง": [], "จราจรทางบก": [], "ขนส่งทางบก": [], "ความปลอดภัยทางถนน": [], "ผังเมือง": [], "ยานพาหนะ": [], "คมนาคม": []}},
-    "ต้นไม้": {"keyword_default": "ป่าไม้", "keywords": {"ป่าไม้": [], "ป่าชุมชน": [], "อุทยานแห่งชาติ": [], "ป่าสงวน": [], "ที่ดิน": []}},
-    "อาหารและเครื่องดื่ม": {"keyword_default": "อาหาร", "keywords": {"อาหาร": [], "เครื่องดื่ม": [], "โภชนาการ": [], "สุขาภิบาลอาหาร": []}},
-    "อินเตอร์เน็ต": {"keyword_default": "อินเทอร์เน็ต", "keywords": {"อินเทอร์เน็ต": [], "ดิจิทัล": [], "โทรคมนาคม": [], "โทรศัพท์": [], "อาชญากรรมทางเทคโนโลยี": []}},
-    "ยาเสพติด/สุรา": {"keyword_default": "สุรา", "keywords": {"สุรา": [], "สรรพสามิต": [], "เครื่องดื่มแอลกอฮอล์": [], "อาหารปลอดภัย": [], "ผลิตสุรา": [], "สุราก้าวหน้า": [], "ผู้ผลิตรายย่อย": [], "กัญชา": [], "สารเสพติด": []}},
-    "สายอาร์ต": {"keyword_default": "ลิขสิทธิ์", "keywords": {"วัฒนธรรมสร้างสรรค์": [], "ซอฟต์พาวเวอร์": [], "ศิลปะ": [], "ศิลปิน": [], "ภาพยนตร์": [], "ลิขสิทธิ์": [], "ทรัพย์สินทางปัญญา": [], "เศรษฐกิจสร้างสรรค์": []}},
-    "น้ำ": {"keyword_default": "ทรัพยากรน้ำ", "keywords": {"ทรัพยากรน้ำ": [], "ชายฝั่ง": [], "ทะเล": [], "น้ำบาดาล": [], "บำบัดน้ำ": [], "การประมง": []}},
-    "สัตว์เลี้ยง": {"keyword_default": "สัตว์เลี้ยง", "keywords": {"สัตว์เลี้ยง": [], "ทารุณกรรมสัตว์": [], "สวัสดิภาพสัตว์": []}},
-    "โรงพยาบาล": {"keyword_default": "สถานพยาบาล", "keywords": {"สถานพยาบาล": [], "สาธารณสุข": [], "ผู้ป่วย": [], "ยา": []}},
-    "การศึกษา/โรงเรียน": {"keyword_default": "การศึกษา", "keywords": {"การศึกษา": [], "กยศ": [], "สิทธิเด็ก": [], "สถานศึกษา": []}},
-    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน", "keywords": {"โรงงาน": [], "สารมลพิษ": [], "วัตถุอันตราย": [], "ผังเมือง": [], "PRTR": []}},
-    "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน", "keywords": {"พลังงาน": [], "ไฟฟ้า": [], "พลังงานหมุนเวียน": [], "พลังงานสะอาด": []}},
-    "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง", "keywords": {"เครื่องสำอาง": [], "สรรพสามิต": [], "ความปลอดภัยของเครื่องสำอาง": []}}
->>>>>>> main
 }
 
 for key, val in objects_data.items():
@@ -194,23 +171,7 @@ def render_intro_view():
         </script>
         """,height=0,width=0)
 
-<<<<<<< HEAD
-    if step == 1:
-        st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
-        st.button("Press Space to continue ➔", on_click=next_intro_step)
-    elif step == 2:
-        st.markdown('<div class="intro-hook">ทุกพื้นที่ของเมือง<br>ถูกขับเคลื่อนด้วย <span class="warning-highlight">กฎหมาย</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
-        st.button("Press Space to continue ➔", on_click=next_intro_step)
-    elif step == 3:
-        st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">POLITILAND</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
-        st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=start_app)
-        st.caption("Interactive exploration of parliamentary decisions in everyday life")
-=======
         st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
->>>>>>> main
 
         if step == 1:
             st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
@@ -336,13 +297,8 @@ if st.session_state.view == 'intro':
 
 elif st.session_state.view == 'map':
     apply_main_css()
-<<<<<<< HEAD
     st.markdown("<h1>POLITILAND Exploration</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 2rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
-=======
-    st.markdown("<h1>Politiland Exploration</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
->>>>>>> main
     
     bg_b64 = get_image_base64("city_bg.png") 
     
@@ -372,23 +328,14 @@ elif st.session_state.view == 'map':
 elif st.session_state.view == 'dash':
     apply_main_css()
     item = st.session_state.item
-<<<<<<< HEAD
     target_category = ITEM_TO_CATEGORY.get(item, "ไม่พบหมวดหมู่")
     data_mock = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
-=======
-    
-    data = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
->>>>>>> main
     
     col_nav, _ = st.columns([1, 4])
     with col_nav:
         st.button("← BACK TO MAP", on_click=change_page, args=('map',))
     
-<<<<<<< HEAD
     st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หมวดหมู่ในสภา: {target_category}</p></div>", unsafe_allow_html=True)
-=======
-    st.markdown(f"<div class='data-card'><h2>{item}</h2><p>หัวข้อหลัก: {data['keyword_default']}</p></div>", unsafe_allow_html=True)
->>>>>>> main
     
     # ------------------ กรองข้อมูลจาก CSV ------------------
     if not df_votes_data.empty and 'category' in df_votes_data.columns:
@@ -396,7 +343,6 @@ elif st.session_state.view == 'dash':
     else:
         df_filtered = pd.DataFrame()
 
-<<<<<<< HEAD
     if df_filtered.empty:
         st.warning(f"ยังไม่มีข้อมูล พ.ร.บ. สำหรับหมวดหมู่ '{target_category}' ในขณะนี้")
     else:
@@ -420,13 +366,6 @@ elif st.session_state.view == 'dash':
             c1.metric("ทั้งหมด", f"{data_mock['bill_stats']['total']}")
             c2.metric("ผ่าน ✅", f"{data_mock['bill_stats']['passed']}")
             c3.metric("ตก ❌", f"{data_mock['bill_stats']['failed']}")
-=======
-    with col_ai:
-        st.markdown(f"<h3>✨ AI Analysis: {selected_keyword}</h3>", unsafe_allow_html=True)
-        with st.spinner("Analyzing..."):
-            summary = get_ai_summary(selected_keyword)
-            st.markdown(f"<div class='ai-report-box'><p style='color: #F1F5F9;'>{summary}</p></div>", unsafe_allow_html=True)
->>>>>>> main
 
         with col_ai:
             st.markdown(f"<h3>✨ AI Analysis: สรุปนโยบาย</h3>", unsafe_allow_html=True)
@@ -434,7 +373,6 @@ elif st.session_state.view == 'dash':
                 summary = get_ai_summary(selected_title)
                 st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
 
-<<<<<<< HEAD
         # ------------------ ส่วนกราฟ Visualization ------------------
         st.write("---")
         st.markdown("<h3>🗳️ Vote Distribution by Political Parties</h3>", unsafe_allow_html=True)
@@ -518,26 +456,3 @@ elif st.session_state.view == 'dash':
             st.info("ไม่มีข้อมูลการโหวตสำหรับ พ.ร.บ. ฉบับนี้")
             
         st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
-=======
-    party_order = sorted(data['vote_details'].keys(), key=lambda p: data['vote_details'][p].get('เห็นชอบ', 0))
-    
-    fig = px.bar(df_votes, x='Percentage', y='Party', color='Vote Type', orientation='h', 
-                 color_discrete_map={"เห็นชอบ": "#2ECC71", "ไม่เห็นชอบ": "#E74C3C", "งดออกเสียง": "#94A3B8"},
-                 text_auto=True)
-    
-    # 🌟 ปรับสีข้อความกราฟ Plotly ให้สว่างเข้ากับธีม
-    fig.update_layout(
-        xaxis_title="ร้อยละ (%)", yaxis_title="", 
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#F8FAFC"), # สีข้อความกราฟ
-        barmode='stack',
-        yaxis={'categoryorder': 'array', 'categoryarray': party_order},
-        legend_title_text="ประเภทการลงมติ",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(t=50, b=10, l=10, r=10),
-        height=350
-    )
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
->>>>>>> main
