@@ -18,15 +18,15 @@ else:
     model = None
 
 # --- 2. Navigation Logic & State ---
-if "item" in st.query_params:
-    item_val = st.query_params["item"]
-    st.session_state.view = 'dash'
-    st.session_state.item = item_val
-    st.query_params.clear() 
-
 if 'view' not in st.session_state: st.session_state.view = 'intro'
 if 'intro_step' not in st.session_state: st.session_state.intro_step = 1
 if 'item' not in st.session_state: st.session_state.item = None
+
+# 🌟 ดึงค่าจากการคลิกและเปลี่ยนหน้า (ไม่ต้อง st.rerun เพราะเดี๋ยวมันรันลงไปข้างล่างเอง)
+if "item" in st.query_params:
+    st.session_state.item = st.query_params["item"]
+    st.session_state.view = 'dash'
+    st.query_params.clear()
 
 def change_page(v, i=None):
     st.session_state.view = v
@@ -41,70 +41,22 @@ def start_app():
 
 # --- 3. ข้อมูลจำลอง ---
 objects_data = {
-    "คน": {
-        "keyword_default": "อาชีพ",
-        "keywords": {"อาชีพ": [], "การจ้างงาน": [], "PDPA": [], "สถานะของบุคคล": []}
-    },
-    "คนพิการ": {
-        "keyword_default": "คนพิการ",
-        "keywords": {"คนพิการ": [],"ผู้ทุพลภาพ": [], "กลุ่มเปราะบาง": []}
-    },
-    "ยานพาหนะ": {
-        "keyword_default": "จราจร",
-        "keywords": {"จราจร": [], "ขนส่ง": [], "รถยนต์": []}
-    },
-    "ถนน": {
-        "keyword_default": "ทางหลวง",
-        "keywords": {"ทางหลวง": [], "จราจรทางบก": [], "ขนส่งทางบก": [], "ความปลอดภัยทางถนน": [], "ผังเมือง": [], "ยานพาหนะ": [], "คมนาคม": []}
-    },
-    "ต้นไม้": {
-        "keyword_default": "ป่าไม้",
-        "keywords": {"ป่าไม้": [], "ป่าชุมชน": [], "อุทยานแห่งชาติ": [], "ป่าสงวน": [], "ที่ดิน": []}
-    },
-    "อาหารและเครื่องดื่ม": {
-        "keyword_default": "อาหาร",
-        "keywords": {"อาหาร": [], "เครื่องดื่ม": [], "โภชนาการ": [], "สุขาภิบาลอาหาร": []}
-    },
-    "อินเตอร์เน็ต": {
-        "keyword_default": "อินเทอร์เน็ต",
-        "keywords": {"อินเทอร์เน็ต": [], "ดิจิทัล": [], "โทรคมนาคม": [], "โทรศัพท์": [], "อาชญากรรมทางเทคโนโลยี": []}
-    },
-    "ยาเสพติด/สุรา": {
-        "keyword_default": "สุรา",
-        "keywords": {"สุรา": [], "สรรพสามิต": [], "เครื่องดื่มแอลกอฮอล์": [], "อาหารปลอดภัย": [], "ผลิตสุรา": [], "สุราก้าวหน้า": [], "ผู้ผลิตรายย่อย": [], "กัญชา": [], "สารเสพติด": []}
-    },
-    "สายอาร์ต": {
-        "keyword_default": "ลิขสิทธิ์",
-        "keywords": {"วัฒนธรรมสร้างสรรค์": [], "ซอฟต์พาวเวอร์": [], "ศิลปะ": [], "ศิลปิน": [], "ภาพยนตร์": [], "ลิขสิทธิ์": [], "ทรัพย์สินทางปัญญา": [], "เศรษฐกิจสร้างสรรค์": []}
-    },
-    "น้ำ": {
-        "keyword_default": "ทรัพยากรน้ำ",
-        "keywords": {"ทรัพยากรน้ำ": [], "ชายฝั่ง": [], "ทะเล": [], "น้ำบาดาล": [], "บำบัดน้ำ": [], "การประมง": []}
-    },
-    "สัตว์เลี้ยง": {
-        "keyword_default": "สัตว์เลี้ยง",
-        "keywords": {"สัตว์เลี้ยง": [], "ทารุณกรรมสัตว์": [], "สวัสดิภาพสัตว์": []}
-    },
-    "โรงพยาบาล": {
-        "keyword_default": "สถานพยาบาล",
-        "keywords": {"สถานพยาบาล": [], "สาธารณสุข": [], "ผู้ป่วย": [], "ยา": []}
-    },
-    "การศึกษา/โรงเรียน": {
-        "keyword_default": "การศึกษา",
-        "keywords": {"การศึกษา": [], "กยศ": [], "สิทธิเด็ก": [], "สถานศึกษา": []}
-    },
-    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {
-        "keyword_default": "โรงงาน",
-        "keywords": {"โรงงาน": [], "สารมลพิษ": [], "วัตถุอันตราย": [], "ผังเมือง": [], "PRTR": []}
-    },
-    "พลังงาน/ไฟฟ้า": {
-        "keyword_default": "พลังงาน",
-        "keywords": {"พลังงาน": [], "ไฟฟ้า": [], "พลังงานหมุนเวียน": [], "พลังงานสะอาด": []}
-    },
-    "เครื่องสำอางค์": {
-        "keyword_default": "เครื่องสำอาง",
-        "keywords": {"เครื่องสำอาง": [], "สรรพสามิต": [], "ความปลอดภัยของเครื่องสำอาง": []}
-    }
+    "คน": {"keyword_default": "อาชีพ", "keywords": {"อาชีพ": [], "การจ้างงาน": [], "PDPA": [], "สถานะของบุคคล": []}},
+    "คนพิการ": {"keyword_default": "คนพิการ", "keywords": {"คนพิการ": [],"ผู้ทุพลภาพ": [], "กลุ่มเปราะบาง": []}},
+    "ยานพาหนะ": {"keyword_default": "จราจร", "keywords": {"จราจร": [], "ขนส่ง": [], "รถยนต์": []}},
+    "ถนน": {"keyword_default": "ทางหลวง", "keywords": {"ทางหลวง": [], "จราจรทางบก": [], "ขนส่งทางบก": [], "ความปลอดภัยทางถนน": [], "ผังเมือง": [], "ยานพาหนะ": [], "คมนาคม": []}},
+    "ต้นไม้": {"keyword_default": "ป่าไม้", "keywords": {"ป่าไม้": [], "ป่าชุมชน": [], "อุทยานแห่งชาติ": [], "ป่าสงวน": [], "ที่ดิน": []}},
+    "อาหารและเครื่องดื่ม": {"keyword_default": "อาหาร", "keywords": {"อาหาร": [], "เครื่องดื่ม": [], "โภชนาการ": [], "สุขาภิบาลอาหาร": []}},
+    "อินเตอร์เน็ต": {"keyword_default": "อินเทอร์เน็ต", "keywords": {"อินเทอร์เน็ต": [], "ดิจิทัล": [], "โทรคมนาคม": [], "โทรศัพท์": [], "อาชญากรรมทางเทคโนโลยี": []}},
+    "ยาเสพติด/สุรา": {"keyword_default": "สุรา", "keywords": {"สุรา": [], "สรรพสามิต": [], "เครื่องดื่มแอลกอฮอล์": [], "อาหารปลอดภัย": [], "ผลิตสุรา": [], "สุราก้าวหน้า": [], "ผู้ผลิตรายย่อย": [], "กัญชา": [], "สารเสพติด": []}},
+    "สายอาร์ต": {"keyword_default": "ลิขสิทธิ์", "keywords": {"วัฒนธรรมสร้างสรรค์": [], "ซอฟต์พาวเวอร์": [], "ศิลปะ": [], "ศิลปิน": [], "ภาพยนตร์": [], "ลิขสิทธิ์": [], "ทรัพย์สินทางปัญญา": [], "เศรษฐกิจสร้างสรรค์": []}},
+    "น้ำ": {"keyword_default": "ทรัพยากรน้ำ", "keywords": {"ทรัพยากรน้ำ": [], "ชายฝั่ง": [], "ทะเล": [], "น้ำบาดาล": [], "บำบัดน้ำ": [], "การประมง": []}},
+    "สัตว์เลี้ยง": {"keyword_default": "สัตว์เลี้ยง", "keywords": {"สัตว์เลี้ยง": [], "ทารุณกรรมสัตว์": [], "สวัสดิภาพสัตว์": []}},
+    "โรงพยาบาล": {"keyword_default": "สถานพยาบาล", "keywords": {"สถานพยาบาล": [], "สาธารณสุข": [], "ผู้ป่วย": [], "ยา": []}},
+    "การศึกษา/โรงเรียน": {"keyword_default": "การศึกษา", "keywords": {"การศึกษา": [], "กยศ": [], "สิทธิเด็ก": [], "สถานศึกษา": []}},
+    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน", "keywords": {"โรงงาน": [], "สารมลพิษ": [], "วัตถุอันตราย": [], "ผังเมือง": [], "PRTR": []}},
+    "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน", "keywords": {"พลังงาน": [], "ไฟฟ้า": [], "พลังงานหมุนเวียน": [], "พลังงานสะอาด": []}},
+    "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง", "keywords": {"เครื่องสำอาง": [], "สรรพสามิต": [], "ความปลอดภัยของเครื่องสำอาง": []}}
 }
 
 for key, val in objects_data.items():
@@ -147,15 +99,6 @@ def get_ai_summary(keyword):
         try: return model.generate_content(f"สรุปเนื้อหาสำคัญของ '{keyword}' สำหรับประชาชนทั่วไปใน 3 บรรทัด").text
         except: return "ระบบ AI ไม่สามารถประมวลผลได้"
     return "โปรดตั้งค่า API Key"
-
-st.markdown("""
-    <style>
-        .block-container { padding-top: 1rem; padding-bottom: 0rem; padding-left: 2rem; padding-right: 2rem; max-width: 100%; }
-        header {visibility: hidden;}
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-    </style>
-""", unsafe_allow_html=True)
 
 def render_intro_view():
     step = st.session_state.intro_step
@@ -220,16 +163,28 @@ def apply_main_css():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
-        .stApp { background-color: #FDFDFD; color: #000; }
+        
+        .stApp { background-color: #F8FBFF; color: #000; } 
+        
         @keyframes pageTransition { 0% { opacity: 0; transform: translateY(15px); filter: blur(3px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0px); } }
-        .block-container { animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        
+        .block-container { 
+            animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+            padding-top: 1rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem; 
+            max-width: 100%; 
+        }
+        
+        header {visibility: hidden;}
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        
         h1 { color: #0F172A; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
         h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #1E293B;}
         div.stButton > button:first-child { background-color: #FFFFFF; color: #1E293B !important; border: 1px solid #E2E8F0; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
         .data-card { background-color: #FFFFFF; border: 1px solid #F1F5F9; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        div[data-testid="metric-container"] { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
+        div[data-testid="metric-container"] { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
         div[data-testid="stMetricValue"] { font-size: 1.4rem; }
-        .ai-report-box { background-color: #F8FAFC; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; }
+        .ai-report-box { background-color: #FFFFFF; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .ai-note { font-size: 0.75rem; color: #94A3B8; text-align: center; margin-top: 0.5rem; }
         </style>
     """, unsafe_allow_html=True)
@@ -241,13 +196,13 @@ if st.session_state.view == 'intro':
 elif st.session_state.view == 'map':
     apply_main_css()
     st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 2rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
     
     bg_b64 = get_image_base64("city_bg.png") 
     
     html_code = f"""
     <style>
-    .map-container {{ position: relative; width: 100%; max-width: 1000px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
+    .map-container {{ position: relative; width: 100%; max-width: 1400px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
     .map-container img {{ transition: filter 0.3s ease, transform 0.3s ease; }}
     .map-container:hover .bg-img, .map-container:hover .obj-img {{ filter: grayscale(100%) opacity(0.8); }}
     .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.3); }}
@@ -262,15 +217,18 @@ elif st.session_state.view == 'map':
     for item_name, conf in objects_config.items():
         obj_b64 = get_image_base64(conf["img"])
         img_src = f"data:image/png;base64,{obj_b64}" if obj_b64 else f"https://via.placeholder.com/150?text={item_name}"
+        # 🌟 เปลี่ยนลิงก์ให้เป็น target="_self" ธรรมดา เพื่อให้ Streamlit จัดการ URL เอง
         html_code += f'<a class="obj-link" href="?item={item_name}" target="_self" style="top: {conf["top"]}; left: {conf["left"]}; width: {conf["width"]};"><img class="obj-img" src="{img_src}" alt="{item_name}"></a>'
         
     html_code += "</div>"
-    st.components.v1.html(html_code, height=700)
+    
+    # 🌟 ฝัง HTML ตรงๆ เข้าไปเลย ไม่สร้าง iframe ซ้อน (ลบคำสั่ง components.html ทิ้งไปแล้ว)
+    st.markdown(html_code, unsafe_allow_html=True)
 
 elif st.session_state.view == 'dash':
     apply_main_css()
     item = st.session_state.item
-    # Fallback to defaults if not found
+    
     data = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
     
     col_nav, _ = st.columns([1, 4])
