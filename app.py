@@ -9,7 +9,11 @@ import ast
 import plotly.graph_objects as go
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
+<<<<<<< HEAD
 st.set_page_config(page_title="POLITILAND Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
+=======
+st.set_page_config(page_title="Politiland Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
+>>>>>>> main
 
 GEMINI_API_KEY = "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8" 
 
@@ -20,15 +24,15 @@ else:
     model = None
 
 # --- 2. Navigation Logic & State ---
-if "item" in st.query_params:
-    item_val = st.query_params["item"]
-    st.session_state.view = 'dash'
-    st.session_state.item = item_val
-    st.query_params.clear() 
-
 if 'view' not in st.session_state: st.session_state.view = 'intro'
 if 'intro_step' not in st.session_state: st.session_state.intro_step = 1
 if 'item' not in st.session_state: st.session_state.item = None
+
+# 🌟 ดึงค่าจากการคลิกและเปลี่ยนหน้า
+if "item" in st.query_params:
+    st.session_state.item = st.query_params["item"]
+    st.session_state.view = 'dash'
+    st.query_params.clear()
 
 def change_page(v, i=None):
     st.session_state.view = v
@@ -78,6 +82,7 @@ ITEM_TO_CATEGORY = {
 
 # --- 4. ข้อมูลจำลอง (เก็บไว้สำหรับส่วนของจำนวน พ.ร.บ. ที่ยังไม่มีใน CSV) ---
 objects_data = {
+<<<<<<< HEAD
     "คน": {"keyword_default": "อาชีพ"},
     "คนพิการ": {"keyword_default": "คนพิการ"},
     "ยานพาหนะ": {"keyword_default": "จราจร"},
@@ -94,6 +99,24 @@ objects_data = {
     "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน"},
     "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน"},
     "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง"}
+=======
+    "คน": {"keyword_default": "อาชีพ", "keywords": {"อาชีพ": [], "การจ้างงาน": [], "PDPA": [], "สถานะของบุคคล": []}},
+    "คนพิการ": {"keyword_default": "คนพิการ", "keywords": {"คนพิการ": [],"ผู้ทุพลภาพ": [], "กลุ่มเปราะบาง": []}},
+    "ยานพาหนะ": {"keyword_default": "จราจร", "keywords": {"จราจร": [], "ขนส่ง": [], "รถยนต์": []}},
+    "ถนน": {"keyword_default": "ทางหลวง", "keywords": {"ทางหลวง": [], "จราจรทางบก": [], "ขนส่งทางบก": [], "ความปลอดภัยทางถนน": [], "ผังเมือง": [], "ยานพาหนะ": [], "คมนาคม": []}},
+    "ต้นไม้": {"keyword_default": "ป่าไม้", "keywords": {"ป่าไม้": [], "ป่าชุมชน": [], "อุทยานแห่งชาติ": [], "ป่าสงวน": [], "ที่ดิน": []}},
+    "อาหารและเครื่องดื่ม": {"keyword_default": "อาหาร", "keywords": {"อาหาร": [], "เครื่องดื่ม": [], "โภชนาการ": [], "สุขาภิบาลอาหาร": []}},
+    "อินเตอร์เน็ต": {"keyword_default": "อินเทอร์เน็ต", "keywords": {"อินเทอร์เน็ต": [], "ดิจิทัล": [], "โทรคมนาคม": [], "โทรศัพท์": [], "อาชญากรรมทางเทคโนโลยี": []}},
+    "ยาเสพติด/สุรา": {"keyword_default": "สุรา", "keywords": {"สุรา": [], "สรรพสามิต": [], "เครื่องดื่มแอลกอฮอล์": [], "อาหารปลอดภัย": [], "ผลิตสุรา": [], "สุราก้าวหน้า": [], "ผู้ผลิตรายย่อย": [], "กัญชา": [], "สารเสพติด": []}},
+    "สายอาร์ต": {"keyword_default": "ลิขสิทธิ์", "keywords": {"วัฒนธรรมสร้างสรรค์": [], "ซอฟต์พาวเวอร์": [], "ศิลปะ": [], "ศิลปิน": [], "ภาพยนตร์": [], "ลิขสิทธิ์": [], "ทรัพย์สินทางปัญญา": [], "เศรษฐกิจสร้างสรรค์": []}},
+    "น้ำ": {"keyword_default": "ทรัพยากรน้ำ", "keywords": {"ทรัพยากรน้ำ": [], "ชายฝั่ง": [], "ทะเล": [], "น้ำบาดาล": [], "บำบัดน้ำ": [], "การประมง": []}},
+    "สัตว์เลี้ยง": {"keyword_default": "สัตว์เลี้ยง", "keywords": {"สัตว์เลี้ยง": [], "ทารุณกรรมสัตว์": [], "สวัสดิภาพสัตว์": []}},
+    "โรงพยาบาล": {"keyword_default": "สถานพยาบาล", "keywords": {"สถานพยาบาล": [], "สาธารณสุข": [], "ผู้ป่วย": [], "ยา": []}},
+    "การศึกษา/โรงเรียน": {"keyword_default": "การศึกษา", "keywords": {"การศึกษา": [], "กยศ": [], "สิทธิเด็ก": [], "สถานศึกษา": []}},
+    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน", "keywords": {"โรงงาน": [], "สารมลพิษ": [], "วัตถุอันตราย": [], "ผังเมือง": [], "PRTR": []}},
+    "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน", "keywords": {"พลังงาน": [], "ไฟฟ้า": [], "พลังงานหมุนเวียน": [], "พลังงานสะอาด": []}},
+    "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง", "keywords": {"เครื่องสำอาง": [], "สรรพสามิต": [], "ความปลอดภัยของเครื่องสำอาง": []}}
+>>>>>>> main
 }
 
 for key, val in objects_data.items():
@@ -131,54 +154,47 @@ def get_ai_summary(keyword):
         except: return "ระบบ AI ไม่สามารถประมวลผลได้"
     return "โปรดตั้งค่า API Key"
 
-st.markdown("""
-    <style>
-        .block-container { padding-top: 1rem; padding-bottom: 0rem; padding-left: 2rem; padding-right: 2rem; max-width: 100%; }
-        header {visibility: hidden;}
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-    </style>
-""", unsafe_allow_html=True)
-
 def render_intro_view():
-    step = st.session_state.intro_step
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-    html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
-    .stApp{ background-color:#0F172A; color:#FFFFFF; }
-    .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
-    @keyframes pageEnter{
-        0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
-        100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
-    }
-    .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
-    .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
-    .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
-    .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
-    .highlight{ color:#3B82F6; font-weight:500; }
-    .warning-highlight{ color:#F59E0B; font-weight:500; }
-    div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
-    div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
-    .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
-    </style>
-    """, unsafe_allow_html=True)
+    intro_placeholder = st.empty()
 
-    components.html("""
-    <script>
-    const doc = window.parent.document;
-    doc.addEventListener('keydown',function(e){
-        if(e.code === 'Space'){
-            e.preventDefault()
-            const buttons = doc.querySelectorAll('.stButton button')
-            if(buttons.length > 0){ buttons[0].click() }
+    with intro_placeholder.container():
+        step = st.session_state.intro_step
+        st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
+        .stApp{ background-color:#0F172A; color:#FFFFFF; }
+        .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
+        @keyframes pageEnter{
+            0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
+            100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
         }
-    })
-    </script>
-    """,height=0,width=0)
+        .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
+        .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
+        .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
+        .highlight{ color:#3B82F6; font-weight:500; }
+        .warning-highlight{ color:#F59E0B; font-weight:500; }
+        div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
+        div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
+        .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
+        </style>
+        """, unsafe_allow_html=True)
 
-    st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+        components.html("""
+        <script>
+        const doc = window.parent.document;
+        doc.addEventListener('keydown',function(e){
+            if(e.code === 'Space'){
+                e.preventDefault()
+                const buttons = doc.querySelectorAll('.stButton button')
+                if(buttons.length > 0){ buttons[0].click() }
+            }
+        })
+        </script>
+        """,height=0,width=0)
 
+<<<<<<< HEAD
     if step == 1:
         st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
@@ -192,28 +208,125 @@ def render_intro_view():
         st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
         st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=start_app)
         st.caption("Interactive exploration of parliamentary decisions in everyday life")
+=======
+        st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+>>>>>>> main
 
-    dots = ["○","○","○"]
-    dots[step-1] = "●"
-    st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+        if step == 1:
+            st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
+            st.button("Press Space to continue ➔", on_click=next_intro_step)
+        elif step == 2:
+            st.markdown('<div class="intro-hook">ทุกพื้นที่ของเมือง<br>ถูกขับเคลื่อนด้วย <span class="warning-highlight">กฎหมาย</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
+            st.button("Press Space to continue ➔", on_click=next_intro_step)
+        elif step == 3:
+            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
+
+            def handle_start():
+                intro_placeholder.empty() 
+                start_app()  
+
+            st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
+            st.caption("Interactive exploration of parliamentary decisions in everyday life")
+
+        dots = ["○","○","○"]
+        dots[step-1] = "●"
+        st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# --- 7. ฟังก์ชันวาดหน้า Intro ---
+
+# def render_intro_view():
+#     # 1. สร้าง Placeholder คลุมไว้ตั้งแต่เริ่ม
+#     intro_placeholder = st.empty()
+    
+#     # 2. เอาเนื้อหาทั้งหมดไปใส่ไว้ใน container ของ placeholder
+#     with intro_placeholder.container():
+#         step = st.session_state.intro_step
+
+#         st.markdown("""
+#         <style>
+#         /* ... ใส่ CSS เดิมของคุณทั้งหมดที่นี่ ... */
+#         </style>
+#         """, unsafe_allow_html=True)
+
+#         components.html("""
+#         <script>
+#         /* ... ใส่ JS เดิมของคุณที่นี่ ... */
+#         </script>
+#         """, height=0, width=0)
+
+#         st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+
+#         if step == 1:
+#             # ... โค้ดเดิม ...
+#             st.button("Press Space to continue ➔", on_click=next_intro_step)
+#         elif step == 2:
+#             # ... โค้ดเดิม ...
+#             st.button("Press Space to continue ➔", on_click=next_intro_step)
+#         elif step == 3:
+#             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
+#             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
+            
+#             # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
+#             def handle_start():
+#                 intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
+#                 start_app()               # แล้วค่อยเปลี่ยน State ไปหน้า Map
+                
+#             st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
+#             st.caption("Interactive exploration of parliamentary decisions in everyday life")
+
+#         dots = ["○","○","○"]
+#         dots[step-1] = "●"
+#         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
+#         st.markdown("</div>", unsafe_allow_html=True)
 
 def apply_main_css():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
-        .stApp { background-color: #FDFDFD; color: #000; }
+        
+        /* 🌟 เปลี่ยนสีพื้นหลังเป็น Dark Mode */
+        .stApp { background-color: #0F172A; color: #F8FAFC; } 
+        
         @keyframes pageTransition { 0% { opacity: 0; transform: translateY(15px); filter: blur(3px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0px); } }
-        .block-container { animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        h1 { color: #0F172A; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
-        h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #1E293B;}
-        div.stButton > button:first-child { background-color: #FFFFFF; color: #1E293B !important; border: 1px solid #E2E8F0; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
-        .data-card { background-color: #FFFFFF; border: 1px solid #F1F5F9; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        div[data-testid="metric-container"] { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
-        div[data-testid="stMetricValue"] { font-size: 1.4rem; }
-        .ai-report-box { background-color: #F8FAFC; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; }
-        .ai-note { font-size: 0.75rem; color: #94A3B8; text-align: center; margin-top: 0.5rem; }
+        
+        .block-container { 
+            animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+            padding-top: 1rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem; 
+            max-width: 100%; 
+        }
+        
+        header {visibility: hidden;}
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        
+        /* 🌟 ปรับสีข้อความต่างๆ ให้สว่างขึ้น เพื่อให้อ่านได้บนพื้นหลังดำ */
+        h1 { color: #FFFFFF; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
+        h2 { color: #FFFFFF; }
+        h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #F1F5F9;}
+        p { color: #CBD5E1; }
+        
+        /* 🌟 ปรับสีปุ่ม */
+        div.stButton > button:first-child { background-color: #1E293B; color: #F8FAFC !important; border: 1px solid #334155; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
+        div.stButton > button:first-child:hover { background-color: #334155; border-color: #475569; }
+        
+        /* 🌟 ปรับสีกล่องการ์ดข้อมูลต่างๆ */
+        .data-card { background-color: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 10px 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .data-card p { color: #94A3B8; margin: 0; }
+        
+        div[data-testid="metric-container"] { background-color: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
+        div[data-testid="stMetricValue"] { font-size: 1.4rem; color: #FFFFFF; }
+        div[data-testid="stMetricLabel"] { color: #94A3B8; }
+        
+        .ai-report-box { background-color: #1E293B; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); color: #F1F5F9;}
+        .ai-note { font-size: 0.75rem; color: #64748B; text-align: center; margin-top: 0.5rem; }
+        
+        /* 🌟 เปลี่ยนสีกรอบ Dropdown Selectbox */
+        div[data-baseweb="select"] > div { background-color: #1E293B; border-color: #334155; color: #FFFFFF; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -223,17 +336,22 @@ if st.session_state.view == 'intro':
 
 elif st.session_state.view == 'map':
     apply_main_css()
+<<<<<<< HEAD
     st.markdown("<h1>POLITILAND Exploration</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 2rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+=======
+    st.markdown("<h1>Politiland Exploration</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
+>>>>>>> main
     
     bg_b64 = get_image_base64("city_bg.png") 
     
     html_code = f"""
     <style>
-    .map-container {{ position: relative; width: 100%; max-width: 1000px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
+    .map-container {{ position: relative; width: 100%; max-width: 1400px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
     .map-container img {{ transition: filter 0.3s ease, transform 0.3s ease; }}
     .map-container:hover .bg-img, .map-container:hover .obj-img {{ filter: grayscale(100%) opacity(0.8); }}
-    .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.3); }}
+    .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.5); }}
     .bg-img {{ width: 100%; height: auto; display: block; }}
     .obj-link {{ position: absolute; display: block; z-index: 10; cursor: pointer; }}
     .obj-img {{ width: 100%; height: auto; object-fit: contain; }}
@@ -248,19 +366,29 @@ elif st.session_state.view == 'map':
         html_code += f'<a class="obj-link" href="?item={item_name}" target="_self" style="top: {conf["top"]}; left: {conf["left"]}; width: {conf["width"]};"><img class="obj-img" src="{img_src}" alt="{item_name}"></a>'
         
     html_code += "</div>"
-    st.components.v1.html(html_code, height=700)
+    
+    st.markdown(html_code, unsafe_allow_html=True)
 
 elif st.session_state.view == 'dash':
     apply_main_css()
     item = st.session_state.item
+<<<<<<< HEAD
     target_category = ITEM_TO_CATEGORY.get(item, "ไม่พบหมวดหมู่")
     data_mock = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
+=======
+    
+    data = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
+>>>>>>> main
     
     col_nav, _ = st.columns([1, 4])
     with col_nav:
         st.button("← BACK TO MAP", on_click=change_page, args=('map',))
     
+<<<<<<< HEAD
     st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หมวดหมู่ในสภา: {target_category}</p></div>", unsafe_allow_html=True)
+=======
+    st.markdown(f"<div class='data-card'><h2>{item}</h2><p>หัวข้อหลัก: {data['keyword_default']}</p></div>", unsafe_allow_html=True)
+>>>>>>> main
     
     # ------------------ กรองข้อมูลจาก CSV ------------------
     if not df_votes_data.empty and 'category' in df_votes_data.columns:
@@ -268,6 +396,7 @@ elif st.session_state.view == 'dash':
     else:
         df_filtered = pd.DataFrame()
 
+<<<<<<< HEAD
     if df_filtered.empty:
         st.warning(f"ยังไม่มีข้อมูล พ.ร.บ. สำหรับหมวดหมู่ '{target_category}' ในขณะนี้")
     else:
@@ -291,6 +420,13 @@ elif st.session_state.view == 'dash':
             c1.metric("ทั้งหมด", f"{data_mock['bill_stats']['total']}")
             c2.metric("ผ่าน ✅", f"{data_mock['bill_stats']['passed']}")
             c3.metric("ตก ❌", f"{data_mock['bill_stats']['failed']}")
+=======
+    with col_ai:
+        st.markdown(f"<h3>✨ AI Analysis: {selected_keyword}</h3>", unsafe_allow_html=True)
+        with st.spinner("Analyzing..."):
+            summary = get_ai_summary(selected_keyword)
+            st.markdown(f"<div class='ai-report-box'><p style='color: #F1F5F9;'>{summary}</p></div>", unsafe_allow_html=True)
+>>>>>>> main
 
         with col_ai:
             st.markdown(f"<h3>✨ AI Analysis: สรุปนโยบาย</h3>", unsafe_allow_html=True)
@@ -298,6 +434,7 @@ elif st.session_state.view == 'dash':
                 summary = get_ai_summary(selected_title)
                 st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
 
+<<<<<<< HEAD
         # ------------------ ส่วนกราฟ Visualization ------------------
         st.write("---")
         st.markdown("<h3>🗳️ Vote Distribution by Political Parties</h3>", unsafe_allow_html=True)
@@ -381,3 +518,26 @@ elif st.session_state.view == 'dash':
             st.info("ไม่มีข้อมูลการโหวตสำหรับ พ.ร.บ. ฉบับนี้")
             
         st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
+=======
+    party_order = sorted(data['vote_details'].keys(), key=lambda p: data['vote_details'][p].get('เห็นชอบ', 0))
+    
+    fig = px.bar(df_votes, x='Percentage', y='Party', color='Vote Type', orientation='h', 
+                 color_discrete_map={"เห็นชอบ": "#2ECC71", "ไม่เห็นชอบ": "#E74C3C", "งดออกเสียง": "#94A3B8"},
+                 text_auto=True)
+    
+    # 🌟 ปรับสีข้อความกราฟ Plotly ให้สว่างเข้ากับธีม
+    fig.update_layout(
+        xaxis_title="ร้อยละ (%)", yaxis_title="", 
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#F8FAFC"), # สีข้อความกราฟ
+        barmode='stack',
+        yaxis={'categoryorder': 'array', 'categoryarray': party_order},
+        legend_title_text="ประเภทการลงมติ",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(t=50, b=10, l=10, r=10),
+        height=350
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
+>>>>>>> main
