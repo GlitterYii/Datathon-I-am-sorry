@@ -5,9 +5,11 @@ import google.generativeai as genai
 import streamlit.components.v1 as components
 import base64
 import os
+import ast
+import plotly.graph_objects as go
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
-st.set_page_config(page_title="JUST-JEE City Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="POLITILAND Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
 
 GEMINI_API_KEY = "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8" 
 
@@ -39,83 +41,64 @@ def next_intro_step():
 def start_app():
     st.session_state.view = 'map'
 
-# --- 3. ข้อมูลจำลอง ---
+# --- 3. โหลดข้อมูลจากไฟล์ CSV และ Mapping ---
+@st.cache_data
+def load_vote_data():
+    try:
+        df = pd.read_csv('final_classified_qwen_v2.csv')
+        # เปลี่ยนเป็นแปลงข้อมูลในคอลัมน์ party_votes_json แทน
+        if 'party_votes_json' in df.columns:
+            df['party_votes_json'] = df['party_votes_json'].apply(lambda x: ast.literal_eval(str(x)) if pd.notnull(x) and str(x).strip() != '' else {})
+        return df
+    except Exception as e:
+        st.warning(f"ไม่สามารถโหลดไฟล์ final_classified_qwen_v2.csv ได้: {e}")
+        return pd.DataFrame()
+
+df_votes_data = load_vote_data()
+
+# Mapping ระหว่าง Object ที่คลิก กับ หมวดหมู่ในไฟล์ CSV
+ITEM_TO_CATEGORY = {
+    "การศึกษา/โรงเรียน": "หมวดการศึกษาและสังคม",
+    "ถนน": "หมวดคมนาคมและการขนส่ง",
+    "ยานพาหนะ": "หมวดคมนาคมและการขนส่ง",
+    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": "หมวดอุตสาหกรรมและพลังงาน",
+    "อาหารและเครื่องดื่ม": "หมวดอุตสาหกรรมและพลังงาน",
+    "น้ำ": "หมวดทรัพยากรธรรมชาติและสิ่งแวดล้อม",
+    "โรงพยาบาล": "หมวดสุขภาพและสาธารณสุข",
+    "สัตว์เลี้ยง": "หมวดสุขภาพและสาธารณสุข",
+    "สายอาร์ต": "หมวดศิลปะและเศรษฐกิจสร้างสรรค์",
+    "อินเตอร์เน็ต": "หมวดเทคโนโลยีและข้อมูล",
+    "ต้นไม้": "หมวดทรัพยากรธรรมชาติและสิ่งแวดล้อม",
+    "คนพิการ": "หมวดบุคคลและสถานะ",
+    "ยาเสพติด/สุรา": "หมวดสิ่งมึนเมาและสารสกัด",
+    "เครื่องสำอางค์": "หมวดสิ่งมึนเมาและสารสกัด",
+    "พลังงาน/ไฟฟ้า": "หมวดอุตสาหกรรมและพลังงาน",
+    "คน": "หมวดบุคคลและสถานะ"
+}
+
+# --- 4. ข้อมูลจำลอง (เก็บไว้สำหรับส่วนของจำนวน พ.ร.บ. ที่ยังไม่มีใน CSV) ---
 objects_data = {
-    "คน": {
-        "keyword_default": "อาชีพ",
-        "keywords": {"อาชีพ": [], "การจ้างงาน": [], "PDPA": [], "สถานะของบุคคล": []}
-    },
-    "คนพิการ": {
-        "keyword_default": "คนพิการ",
-        "keywords": {"คนพิการ": [],"ผู้ทุพลภาพ": [], "กลุ่มเปราะบาง": []}
-    },
-    "ยานพาหนะ": {
-        "keyword_default": "จราจร",
-        "keywords": {"จราจร": [], "ขนส่ง": [], "รถยนต์": []}
-    },
-    "ถนน": {
-        "keyword_default": "ทางหลวง",
-        "keywords": {"ทางหลวง": [], "จราจรทางบก": [], "ขนส่งทางบก": [], "ความปลอดภัยทางถนน": [], "ผังเมือง": [], "ยานพาหนะ": [], "คมนาคม": []}
-    },
-    "ต้นไม้": {
-        "keyword_default": "ป่าไม้",
-        "keywords": {"ป่าไม้": [], "ป่าชุมชน": [], "อุทยานแห่งชาติ": [], "ป่าสงวน": [], "ที่ดิน": []}
-    },
-    "อาหารและเครื่องดื่ม": {
-        "keyword_default": "อาหาร",
-        "keywords": {"อาหาร": [], "เครื่องดื่ม": [], "โภชนาการ": [], "สุขาภิบาลอาหาร": []}
-    },
-    "อินเตอร์เน็ต": {
-        "keyword_default": "อินเทอร์เน็ต",
-        "keywords": {"อินเทอร์เน็ต": [], "ดิจิทัล": [], "โทรคมนาคม": [], "โทรศัพท์": [], "อาชญากรรมทางเทคโนโลยี": []}
-    },
-    "ยาเสพติด/สุรา": {
-        "keyword_default": "สุรา",
-        "keywords": {"สุรา": [], "สรรพสามิต": [], "เครื่องดื่มแอลกอฮอล์": [], "อาหารปลอดภัย": [], "ผลิตสุรา": [], "สุราก้าวหน้า": [], "ผู้ผลิตรายย่อย": [], "กัญชา": [], "สารเสพติด": []}
-    },
-    "สายอาร์ต": {
-        "keyword_default": "ลิขสิทธิ์",
-        "keywords": {"วัฒนธรรมสร้างสรรค์": [], "ซอฟต์พาวเวอร์": [], "ศิลปะ": [], "ศิลปิน": [], "ภาพยนตร์": [], "ลิขสิทธิ์": [], "ทรัพย์สินทางปัญญา": [], "เศรษฐกิจสร้างสรรค์": []}
-    },
-    "น้ำ": {
-        "keyword_default": "ทรัพยากรน้ำ",
-        "keywords": {"ทรัพยากรน้ำ": [], "ชายฝั่ง": [], "ทะเล": [], "น้ำบาดาล": [], "บำบัดน้ำ": [], "การประมง": []}
-    },
-    "สัตว์เลี้ยง": {
-        "keyword_default": "สัตว์เลี้ยง",
-        "keywords": {"สัตว์เลี้ยง": [], "ทารุณกรรมสัตว์": [], "สวัสดิภาพสัตว์": []}
-    },
-    "โรงพยาบาล": {
-        "keyword_default": "สถานพยาบาล",
-        "keywords": {"สถานพยาบาล": [], "สาธารณสุข": [], "ผู้ป่วย": [], "ยา": []}
-    },
-    "การศึกษา/โรงเรียน": {
-        "keyword_default": "การศึกษา",
-        "keywords": {"การศึกษา": [], "กยศ": [], "สิทธิเด็ก": [], "สถานศึกษา": []}
-    },
-    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {
-        "keyword_default": "โรงงาน",
-        "keywords": {"โรงงาน": [], "สารมลพิษ": [], "วัตถุอันตราย": [], "ผังเมือง": [], "PRTR": []}
-    },
-    "พลังงาน/ไฟฟ้า": {
-        "keyword_default": "พลังงาน",
-        "keywords": {"พลังงาน": [], "ไฟฟ้า": [], "พลังงานหมุนเวียน": [], "พลังงานสะอาด": []}
-    },
-    "เครื่องสำอางค์": {
-        "keyword_default": "เครื่องสำอาง",
-        "keywords": {"เครื่องสำอาง": [], "สรรพสามิต": [], "ความปลอดภัยของเครื่องสำอาง": []}
-    }
+    "คน": {"keyword_default": "อาชีพ"},
+    "คนพิการ": {"keyword_default": "คนพิการ"},
+    "ยานพาหนะ": {"keyword_default": "จราจร"},
+    "ถนน": {"keyword_default": "ทางหลวง"},
+    "ต้นไม้": {"keyword_default": "ป่าไม้"},
+    "อาหารและเครื่องดื่ม": {"keyword_default": "อาหาร"},
+    "อินเตอร์เน็ต": {"keyword_default": "อินเทอร์เน็ต"},
+    "ยาเสพติด/สุรา": {"keyword_default": "สุรา"},
+    "สายอาร์ต": {"keyword_default": "ลิขสิทธิ์"},
+    "น้ำ": {"keyword_default": "ทรัพยากรน้ำ"},
+    "สัตว์เลี้ยง": {"keyword_default": "สัตว์เลี้ยง"},
+    "โรงพยาบาล": {"keyword_default": "สถานพยาบาล"},
+    "การศึกษา/โรงเรียน": {"keyword_default": "การศึกษา"},
+    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน"},
+    "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน"},
+    "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง"}
 }
 
 for key, val in objects_data.items():
     if "bill_stats" not in val:
         val["bill_stats"] = {"total": 12, "passed": 8, "failed": 4}
-    if "vote_details" not in val:
-        val["vote_details"] = {
-            "พรรคก้าวไกล": {"เห็นชอบ": 85, "ไม่เห็นชอบ": 10, "งดออกเสียง": 5},
-            "พรรคเพื่อไทย": {"เห็นชอบ": 75, "ไม่เห็นชอบ": 15, "งดออกเสียง": 10},
-            "พรรคภูมิใจไทย": {"เห็นชอบ": 40, "ไม่เห็นชอบ": 50, "งดออกเสียง": 10}
-        }
 
 objects_config = {
     "การศึกษา/โรงเรียน": {"img": "school.png", "top": "7%", "left": "5%", "width": "20%"},
@@ -205,7 +188,7 @@ def render_intro_view():
         st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
         st.button("Press Space to continue ➔", on_click=next_intro_step)
     elif step == 3:
-        st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">POLITILAND</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
         st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=start_app)
         st.caption("Interactive exploration of parliamentary decisions in everyday life")
@@ -240,7 +223,7 @@ if st.session_state.view == 'intro':
 
 elif st.session_state.view == 'map':
     apply_main_css()
-    st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>POLITILAND Exploration</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 2rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
     
     bg_b64 = get_image_base64("city_bg.png") 
@@ -270,59 +253,131 @@ elif st.session_state.view == 'map':
 elif st.session_state.view == 'dash':
     apply_main_css()
     item = st.session_state.item
-    # Fallback to defaults if not found
-    data = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
+    target_category = ITEM_TO_CATEGORY.get(item, "ไม่พบหมวดหมู่")
+    data_mock = objects_data.get(item, objects_data["การศึกษา/โรงเรียน"])
     
     col_nav, _ = st.columns([1, 4])
     with col_nav:
         st.button("← BACK TO MAP", on_click=change_page, args=('map',))
     
-    st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หัวข้อหลัก: {data['keyword_default']}</p></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หมวดหมู่ในสภา: {target_category}</p></div>", unsafe_allow_html=True)
     
-    all_keywords = [data['keyword_default']] + list(data['keywords'].keys())
-    all_keywords = list(dict.fromkeys(all_keywords))
-    selected_keyword = st.selectbox("📌 เลือกหัวข้อย่อยเพื่อดูสรุปจาก AI:", all_keywords)
-    
-    col_stat, col_ai = st.columns([1, 1.5])
-    
-    with col_stat:
-        st.markdown("<h3>📄 สถานะ พ.ร.บ. ที่เกี่ยวข้อง</h3>", unsafe_allow_html=True)
-        c1, c2, c3 = st.columns(3)
-        c1.metric("ทั้งหมด", f"{data['bill_stats']['total']}")
-        c2.metric("ผ่าน ✅", f"{data['bill_stats']['passed']}")
-        c3.metric("ตก ❌", f"{data['bill_stats']['failed']}")
+    # ------------------ กรองข้อมูลจาก CSV ------------------
+    if not df_votes_data.empty and 'category' in df_votes_data.columns:
+        df_filtered = df_votes_data[df_votes_data['category'] == target_category]
+    else:
+        df_filtered = pd.DataFrame()
 
-    with col_ai:
-        st.markdown(f"<h3>✨ AI Analysis: {selected_keyword}</h3>", unsafe_allow_html=True)
-        with st.spinner("Analyzing..."):
-            summary = get_ai_summary(selected_keyword)
-            st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
+    if df_filtered.empty:
+        st.warning(f"ยังไม่มีข้อมูล พ.ร.บ. สำหรับหมวดหมู่ '{target_category}' ในขณะนี้")
+    else:
+        # สร้าง Dropdown ด้วยรายชื่อ Title ทั้งหมดในหมวดนี้
+        titles_list = df_filtered['title'].unique().tolist()
+        selected_title = st.selectbox("📌 เลือกร่าง พ.ร.บ. เพื่อดูผลการลงมติและสรุปจาก AI:", titles_list)
+        
+        # ดึงข้อมูลแถวของ Title ที่ถูกเลือก
+        row_data = df_filtered[df_filtered['title'] == selected_title].iloc[0]
+        
+        # ดึงข้อมูลคะแนนโหวตจากคอลัมน์ party_votes_json แทน all_votes
+        vote_dict = row_data.get('party_votes_json', {})
+        
+        # แสดง Stat & AI Summary
+        col_stat, col_ai = st.columns([1, 1.5])
+        
+        with col_stat:
+            st.markdown("<h3>📄 สถานะ พ.ร.บ. ที่เกี่ยวข้อง</h3>", unsafe_allow_html=True)
+            c1, c2, c3 = st.columns(3)
+            # แสดงสถิติจำลองไปก่อน ถ้าในอนาคตมีข้อมูลจริงใน CSV ค่อยปรับแก้ได้
+            c1.metric("ทั้งหมด", f"{data_mock['bill_stats']['total']}")
+            c2.metric("ผ่าน ✅", f"{data_mock['bill_stats']['passed']}")
+            c3.metric("ตก ❌", f"{data_mock['bill_stats']['failed']}")
 
-    st.write("---")
-    st.markdown("<h3>🗳️ Vote Distribution by Political Parties (%)</h3>", unsafe_allow_html=True)
-    
-    rows = []
-    for party, votes in data['vote_details'].items():
-        for vote_type, percentage in votes.items():
-            rows.append({'Party': party, 'Vote Type': vote_type, 'Percentage': percentage})
-    df_votes = pd.DataFrame(rows)
+        with col_ai:
+            st.markdown(f"<h3>✨ AI Analysis: สรุปนโยบาย</h3>", unsafe_allow_html=True)
+            with st.spinner("Analyzing..."):
+                summary = get_ai_summary(selected_title)
+                st.markdown(f"<div class='ai-report-box'><p>{summary}</p></div>", unsafe_allow_html=True)
 
-    party_order = sorted(data['vote_details'].keys(), key=lambda p: data['vote_details'][p].get('เห็นชอบ', 0))
-    
-    fig = px.bar(df_votes, x='Percentage', y='Party', color='Vote Type', orientation='h', 
-                 color_discrete_map={"เห็นชอบ": "#2ECC71", "ไม่เห็นชอบ": "#E74C3C", "งดออกเสียง": "#94A3B8"},
-                 text_auto=True)
-    
-    fig.update_layout(
-        xaxis_title="ร้อยละ (%)", yaxis_title="", 
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        barmode='stack',
-        yaxis={'categoryorder': 'array', 'categoryarray': party_order},
-        legend_title_text="ประเภทการลงมติ",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(t=50, b=10, l=10, r=10),
-        height=350
-    )
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
+        # ------------------ ส่วนกราฟ Visualization ------------------
+        st.write("---")
+        st.markdown("<h3>🗳️ Vote Distribution by Political Parties</h3>", unsafe_allow_html=True)
+        
+        # 2. จัดเตรียมข้อมูลสำหรับพล็อต (ใช้ logic แบ่งสีเหมือนเดิม แต่ Apply กับ vote_dict ที่ดึงมาใหม่)
+        processed_data = []
+        if isinstance(vote_dict, dict):
+            for party, votes in vote_dict.items():
+                if isinstance(votes, dict):
+                    # รวมคะแนนเห็นด้วย / เห็นชอบ
+                    agree = votes.get('เห็นด้วย', 0) + votes.get('เห็นชอบ', 0)
+                    # รวมคะแนนที่ไม่เห็นด้วย ลา ขาด งดออกเสียง
+                    others = votes.get('ลา/ขาด', 0) + votes.get('งดออกเสียง', 0) + votes.get('ไม่ลงคะแนน', 0) + votes.get('ไม่เห็นชอบ', 0)
+                    
+                    processed_data.append({
+                        'พรรค': party,
+                        'เห็นด้วย': agree,
+                        'อื่นๆ (ลา/งด/ไม่เห็นชอบ)': others
+                    })
+
+        # 3. สร้างกราฟ
+        if processed_data:
+            df_plot = pd.DataFrame(processed_data)
+            # เรียงจากพรรคที่เห็นด้วยน้อยไปมาก เพื่อให้พรรคที่โหวตเห็นด้วยเยอะๆ อยู่ด้านบน
+            df_plot = df_plot.sort_values(by='เห็นด้วย', ascending=True)
+
+            # กำหนดสี
+            colors_agree = {
+                'ประชาชน': '#FF6600',
+                'ก้าวไกล': '#F47933',
+                'พรรคก้าวไกล': '#F47933',
+                'เพื่อไทย': '#DA3731',
+                'พรรคเพื่อไทย': '#DA3731',
+                'ภูมิใจไทย': '#2C3487',
+                'พรรคภูมิใจไทย': '#2C3487',
+                'รวมไทยสร้างชาติ': '#224494',
+                'พลังประชารัฐ': '#3569BB'
+            }
+            default_palette = px.colors.qualitative.Safe
+
+            fig = go.Figure()
+
+            # แท่งคะแนน "เห็นด้วย" (ใช้สีแยกตามพรรค)
+            for i, party in enumerate(df_plot['พรรค']):
+                party_row = df_plot[df_plot['พรรค'] == party]
+                color = colors_agree.get(party, default_palette[i % len(default_palette)])
+                
+                fig.add_trace(go.Bar(
+                    y=[party],
+                    x=party_row['เห็นด้วย'],
+                    name=f"{party} (เห็นด้วย)",
+                    orientation='h',
+                    marker=dict(color=color),
+                    showlegend=False,
+                    text=party_row['เห็นด้วย'],
+                    textposition='inside'
+                ))
+
+            # แท่งคะแนน "กลุ่มอื่นๆ" (ใช้สีเทาเหมือนกันหมด)
+            fig.add_trace(go.Bar(
+                y=df_plot['พรรค'],
+                x=df_plot['อื่นๆ (ลา/งด/ไม่เห็นชอบ)'],
+                name="อื่นๆ (ลา/ขาด/งด/ไม่เห็นชอบ)",
+                orientation='h',
+                marker=dict(color='#B0B0B0'),
+                text=df_plot['อื่นๆ (ลา/งด/ไม่เห็นชอบ)'],
+                textposition='outside'
+            ))
+
+            # ปรับแต่งหน้าตากราฟ
+            fig.update_layout(
+                xaxis_title="จำนวนคะแนนเสียง", yaxis_title="", 
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                barmode='stack', # ให้แท่งกราฟต่อกันแนวนอน
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                margin=dict(t=50, b=10, l=10, r=10),
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("ไม่มีข้อมูลการโหวตสำหรับ พ.ร.บ. ฉบับนี้")
+            
+        st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
