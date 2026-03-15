@@ -7,7 +7,7 @@ import base64
 import os
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
-st.set_page_config(page_title="JUST-JEE City Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Politiland Exploration", layout="wide", page_icon="🏙️", initial_sidebar_state="collapsed")
 
 GEMINI_API_KEY = "AIzaSyD8dkFu8Si2j9bTr7at9BINy3MCKueCCg8" 
 
@@ -173,7 +173,7 @@ def render_intro_view():
             st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
             st.button("Press Space to continue ➔", on_click=next_intro_step)
         elif step == 3:
-            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
 
 
@@ -221,7 +221,7 @@ def render_intro_view():
 #             # ... โค้ดเดิม ...
 #             st.button("Press Space to continue ➔", on_click=next_intro_step)
 #         elif step == 3:
-#             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
+#             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
 #             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
             
 #             # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
@@ -274,7 +274,7 @@ if st.session_state.view == 'intro':
 
 elif st.session_state.view == 'map':
     apply_main_css()
-    st.markdown("<h1>JUST-JEE City Exploration</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>Politiland Exploration</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 1.5rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
     
     bg_b64 = get_image_base64("city_bg.png") 
