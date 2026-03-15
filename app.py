@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 import base64
 import os
 import ast
+import json
 import plotly.graph_objects as go
 
 # --- 1. ตั้งค่าหน้าเว็บและการเชื่อมต่อ AI ---
@@ -20,15 +21,14 @@ else:
     model = None
 
 # --- 2. Navigation Logic & State ---
-if "item" in st.query_params:
-    item_val = st.query_params["item"]
-    st.session_state.view = 'dash'
-    st.session_state.item = item_val
-    st.query_params.clear() 
-
 if 'view' not in st.session_state: st.session_state.view = 'intro'
 if 'intro_step' not in st.session_state: st.session_state.intro_step = 1
 if 'item' not in st.session_state: st.session_state.item = None
+
+if "item" in st.query_params:
+    st.session_state.item = st.query_params["item"]
+    st.session_state.view = 'dash'
+    st.query_params.clear()
 
 def change_page(v, i=None):
     st.session_state.view = v
@@ -41,22 +41,18 @@ def next_intro_step():
 def start_app():
     st.session_state.view = 'map'
 
-# --- 3. โหลดข้อมูลจากไฟล์ CSV และ Mapping ---
+# --- 3. โหลดข้อมูลจากไฟล์ CSV (เปลี่ยนชื่อเพื่อล้าง Cache) ---
 @st.cache_data
-def load_vote_data():
+def fetch_final_csv_data_v3():
     try:
         df = pd.read_csv('final_classified_qwen_v2.csv')
-        # เปลี่ยนเป็นแปลงข้อมูลในคอลัมน์ party_votes_json แทน
-        if 'party_votes_json' in df.columns:
-            df['party_votes_json'] = df['party_votes_json'].apply(lambda x: ast.literal_eval(str(x)) if pd.notnull(x) and str(x).strip() != '' else {})
         return df
     except Exception as e:
         st.warning(f"ไม่สามารถโหลดไฟล์ final_classified_qwen_v2.csv ได้: {e}")
         return pd.DataFrame()
 
-df_votes_data = load_vote_data()
+df_votes_data = fetch_final_csv_data_v3()
 
-# Mapping ระหว่าง Object ที่คลิก กับ หมวดหมู่ในไฟล์ CSV
 ITEM_TO_CATEGORY = {
     "การศึกษา/โรงเรียน": "หมวดการศึกษาและสังคม",
     "ถนน": "หมวดคมนาคมและการขนส่ง",
@@ -76,24 +72,15 @@ ITEM_TO_CATEGORY = {
     "คน": "หมวดบุคคลและสถานะ"
 }
 
-# --- 4. ข้อมูลจำลอง (เก็บไว้สำหรับส่วนของจำนวน พ.ร.บ. ที่ยังไม่มีใน CSV) ---
 objects_data = {
-    "คน": {"keyword_default": "อาชีพ"},
-    "คนพิการ": {"keyword_default": "คนพิการ"},
-    "ยานพาหนะ": {"keyword_default": "จราจร"},
-    "ถนน": {"keyword_default": "ทางหลวง"},
-    "ต้นไม้": {"keyword_default": "ป่าไม้"},
-    "อาหารและเครื่องดื่ม": {"keyword_default": "อาหาร"},
-    "อินเตอร์เน็ต": {"keyword_default": "อินเทอร์เน็ต"},
-    "ยาเสพติด/สุรา": {"keyword_default": "สุรา"},
-    "สายอาร์ต": {"keyword_default": "ลิขสิทธิ์"},
-    "น้ำ": {"keyword_default": "ทรัพยากรน้ำ"},
-    "สัตว์เลี้ยง": {"keyword_default": "สัตว์เลี้ยง"},
-    "โรงพยาบาล": {"keyword_default": "สถานพยาบาล"},
-    "การศึกษา/โรงเรียน": {"keyword_default": "การศึกษา"},
-    "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน"},
-    "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน"},
-    "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง"}
+    "คน": {"keyword_default": "อาชีพ"}, "คนพิการ": {"keyword_default": "คนพิการ"},
+    "ยานพาหนะ": {"keyword_default": "จราจร"}, "ถนน": {"keyword_default": "ทางหลวง"},
+    "ต้นไม้": {"keyword_default": "ป่าไม้"}, "อาหารและเครื่องดื่ม": {"keyword_default": "อาหาร"},
+    "อินเตอร์เน็ต": {"keyword_default": "อินเทอร์เน็ต"}, "ยาเสพติด/สุรา": {"keyword_default": "สุรา"},
+    "สายอาร์ต": {"keyword_default": "ลิขสิทธิ์"}, "น้ำ": {"keyword_default": "ทรัพยากรน้ำ"},
+    "สัตว์เลี้ยง": {"keyword_default": "สัตว์เลี้ยง"}, "โรงพยาบาล": {"keyword_default": "สถานพยาบาล"},
+    "การศึกษา/โรงเรียน": {"keyword_default": "การศึกษา"}, "โรงงาน/อุตสาหกรรม/นิคมอุตสาหกรรม": {"keyword_default": "โรงงาน"},
+    "พลังงาน/ไฟฟ้า": {"keyword_default": "พลังงาน"}, "เครื่องสำอางค์": {"keyword_default": "เครื่องสำอาง"}
 }
 
 for key, val in objects_data.items():
@@ -131,89 +118,88 @@ def get_ai_summary(keyword):
         except: return "ระบบ AI ไม่สามารถประมวลผลได้"
     return "โปรดตั้งค่า API Key"
 
-st.markdown("""
-    <style>
-        .block-container { padding-top: 1rem; padding-bottom: 0rem; padding-left: 2rem; padding-right: 2rem; max-width: 100%; }
-        header {visibility: hidden;}
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-    </style>
-""", unsafe_allow_html=True)
-
 def render_intro_view():
-    step = st.session_state.intro_step
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-    html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
-    .stApp{ background-color:#0F172A; color:#FFFFFF; }
-    .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
-    @keyframes pageEnter{
-        0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); }
-        100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); }
-    }
-    .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
-    .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
-    .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
-    .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
-    .highlight{ color:#3B82F6; font-weight:500; }
-    .warning-highlight{ color:#F59E0B; font-weight:500; }
-    div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
-    div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
-    .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
-    </style>
-    """, unsafe_allow_html=True)
+    intro_placeholder = st.empty()
+    with intro_placeholder.container():
+        step = st.session_state.intro_step
+        st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        html, body, [class*="css"]{ font-family:'Inter','Prompt',sans-serif; }
+        .stApp{ background-color:#0F172A; color:#FFFFFF; }
+        .block-container{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100%; max-width:1000px; text-align:center; padding:0; }
+        @keyframes pageEnter{ 0%{ opacity:0; transform:translateY(30px) scale(0.98); filter:blur(6px); } 100%{ opacity:1; transform:translateY(0px) scale(1); filter:blur(0px); } }
+        .page-step{ animation:pageEnter 0.7s cubic-bezier(0.2,0.8,0.2,1); }
+        .intro-container{ display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .intro-hook{ font-size:2.8rem; font-weight:600; color:#F1F5F9; line-height:1.35; letter-spacing:-0.5px; margin-bottom:1rem; }
+        .intro-text{ font-size:1.35rem; color:#94A3B8; line-height:1.7; margin-bottom:2rem; }
+        .highlight{ color:#3B82F6; font-weight:500; }
+        .warning-highlight{ color:#F59E0B; font-weight:500; }
+        div.stButton > button:first-child{ background-color:#2563EB; border:none; color:white !important; border-radius:40px; padding:12px 40px; font-size:1.1rem; font-weight:500; transition:all 0.25s ease; }
+        div.stButton > button:first-child:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(37,99,235,0.35); }
+        .progress{ font-size:1.3rem; color:#64748B; margin-top:20px; }
+        </style>
+        """, unsafe_allow_html=True)
 
-    components.html("""
-    <script>
-    const doc = window.parent.document;
-    doc.addEventListener('keydown',function(e){
-        if(e.code === 'Space'){
-            e.preventDefault()
-            const buttons = doc.querySelectorAll('.stButton button')
-            if(buttons.length > 0){ buttons[0].click() }
-        }
-    })
-    </script>
-    """,height=0,width=0)
+        components.html("""
+        <script>
+        const doc = window.parent.document;
+        doc.addEventListener('keydown',function(e){
+            if(e.code === 'Space'){
+                e.preventDefault(); const buttons = doc.querySelectorAll('.stButton button');
+                if(buttons.length > 0){ buttons[0].click() }
+            }
+        })
+        </script>
+        """,height=0,width=0)
 
-    st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
+        st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
 
-    if step == 1:
-        st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
-        st.button("Press Space to continue ➔", on_click=next_intro_step)
-    elif step == 2:
-        st.markdown('<div class="intro-hook">ทุกพื้นที่ของเมือง<br>ถูกขับเคลื่อนด้วย <span class="warning-highlight">กฎหมาย</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
-        st.button("Press Space to continue ➔", on_click=next_intro_step)
-    elif step == 3:
-        st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">POLITILAND</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
-        st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=start_app)
-        st.caption("Interactive exploration of parliamentary decisions in everyday life")
+        if step == 1:
+            st.markdown('<div class="intro-hook">กฎหมายไม่ได้อยู่แค่ในรัฐสภา<br>แต่มันอยู่ใน <span class="highlight">ทุกวันของชีวิตคุณ</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">เคยสงสัยไหมว่า...<br><br>ไฟฟ้าที่คุณใช้<br>โรงพยาบาลที่คุณไป<br>หรืออาหารที่คุณกิน<br><br>ทั้งหมดถูกกำหนดโดย <b>การโหวตในรัฐสภา</b></div>', unsafe_allow_html=True)
+            st.button("Press Space to continue ➔", on_click=next_intro_step)
+        elif step == 2:
+            st.markdown('<div class="intro-hook">ทุกพื้นที่ของเมือง<br>ถูกขับเคลื่อนด้วย <span class="warning-highlight">กฎหมาย</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">กฎหมายไม่ใช่เรื่องไกลตัว<br>และไม่ใช่แค่เอกสารในสภา<br><br>แต่มันคือตัวกำหนด <b>คุณภาพชีวิตของคุณ</b></div>', unsafe_allow_html=True)
+            st.button("Press Space to continue ➔", on_click=next_intro_step)
+        elif step == 3:
+            st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">Politiland</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
 
-    dots = ["○","○","○"]
-    dots[step-1] = "●"
-    st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+            def handle_start():
+                intro_placeholder.empty() 
+                start_app()  
+
+            st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
+            st.caption("Interactive exploration of parliamentary decisions in everyday life")
+
+        dots = ["○","○","○"]
+        dots[step-1] = "●"
+        st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 def apply_main_css():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
-        .stApp { background-color: #FDFDFD; color: #000; }
+        .stApp { background-color: #0F172A; color: #F8FAFC; } 
         @keyframes pageTransition { 0% { opacity: 0; transform: translateY(15px); filter: blur(3px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0px); } }
-        .block-container { animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        h1 { color: #0F172A; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
-        h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #1E293B;}
-        div.stButton > button:first-child { background-color: #FFFFFF; color: #1E293B !important; border: 1px solid #E2E8F0; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
-        .data-card { background-color: #FFFFFF; border: 1px solid #F1F5F9; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        div[data-testid="metric-container"] { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
-        div[data-testid="stMetricValue"] { font-size: 1.4rem; }
-        .ai-report-box { background-color: #F8FAFC; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; }
-        .ai-note { font-size: 0.75rem; color: #94A3B8; text-align: center; margin-top: 0.5rem; }
+        .block-container { animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; padding-top: 1rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem; max-width: 100%; }
+        header {visibility: hidden;} #MainMenu {visibility: hidden;} footer {visibility: hidden;}
+        h1 { color: #FFFFFF; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
+        h2 { color: #FFFFFF; } h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #F1F5F9;}
+        p { color: #CBD5E1; }
+        div.stButton > button:first-child { background-color: #1E293B; color: #F8FAFC !important; border: 1px solid #334155; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
+        div.stButton > button:first-child:hover { background-color: #334155; border-color: #475569; }
+        .data-card { background-color: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 10px 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .data-card p { color: #94A3B8; margin: 0; }
+        div[data-testid="metric-container"] { background-color: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
+        div[data-testid="stMetricValue"] { font-size: 1.4rem; color: #FFFFFF; } div[data-testid="stMetricLabel"] { color: #94A3B8; }
+        .ai-report-box { background-color: #1E293B; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); color: #F1F5F9;}
+        .ai-note { font-size: 0.75rem; color: #64748B; text-align: center; margin-top: 0.5rem; }
+        div[data-baseweb="select"] > div { background-color: #1E293B; border-color: #334155; color: #FFFFFF; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -225,30 +211,25 @@ elif st.session_state.view == 'map':
     apply_main_css()
     st.markdown("<h1>POLITILAND Exploration</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #64748B; font-size: 1.1rem; margin-bottom: 2rem;'>คลิกเลือกสำรวจนโยบายในแต่ละพื้นที่ของเมือง</p>", unsafe_allow_html=True)
-    
     bg_b64 = get_image_base64("city_bg.png") 
-    
     html_code = f"""
     <style>
-    .map-container {{ position: relative; width: 100%; max-width: 1000px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
+    .map-container {{ position: relative; width: 100%; max-width: 1400px; margin: 0 auto; overflow: hidden; border-radius: 12px; }}
     .map-container img {{ transition: filter 0.3s ease, transform 0.3s ease; }}
     .map-container:hover .bg-img, .map-container:hover .obj-img {{ filter: grayscale(100%) opacity(0.8); }}
-    .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.3); }}
+    .map-container .obj-link:hover .obj-img {{ filter: grayscale(0%) opacity(1) !important; transform: scale(1.1); drop-shadow: 0px 10px 15px rgba(0,0,0,0.5); }}
     .bg-img {{ width: 100%; height: auto; display: block; }}
     .obj-link {{ position: absolute; display: block; z-index: 10; cursor: pointer; }}
     .obj-img {{ width: 100%; height: auto; object-fit: contain; }}
     </style>
-    <div class="map-container">
-        <img class="bg-img" src="data:image/png;base64,{bg_b64}" alt="Background">
+    <div class="map-container"><img class="bg-img" src="data:image/png;base64,{bg_b64}" alt="Background">
     """
-    
     for item_name, conf in objects_config.items():
         obj_b64 = get_image_base64(conf["img"])
         img_src = f"data:image/png;base64,{obj_b64}" if obj_b64 else f"https://via.placeholder.com/150?text={item_name}"
         html_code += f'<a class="obj-link" href="?item={item_name}" target="_self" style="top: {conf["top"]}; left: {conf["left"]}; width: {conf["width"]};"><img class="obj-img" src="{img_src}" alt="{item_name}"></a>'
-        
     html_code += "</div>"
-    st.components.v1.html(html_code, height=700)
+    st.markdown(html_code, unsafe_allow_html=True)
 
 elif st.session_state.view == 'dash':
     apply_main_css()
@@ -262,7 +243,6 @@ elif st.session_state.view == 'dash':
     
     st.markdown(f"<div class='data-card'><h2>{item}</h2><p style='color: #64748B;'>หมวดหมู่ในสภา: {target_category}</p></div>", unsafe_allow_html=True)
     
-    # ------------------ กรองข้อมูลจาก CSV ------------------
     if not df_votes_data.empty and 'category' in df_votes_data.columns:
         df_filtered = df_votes_data[df_votes_data['category'] == target_category]
     else:
@@ -271,23 +251,15 @@ elif st.session_state.view == 'dash':
     if df_filtered.empty:
         st.warning(f"ยังไม่มีข้อมูล พ.ร.บ. สำหรับหมวดหมู่ '{target_category}' ในขณะนี้")
     else:
-        # สร้าง Dropdown ด้วยรายชื่อ Title ทั้งหมดในหมวดนี้
         titles_list = df_filtered['title'].unique().tolist()
         selected_title = st.selectbox("📌 เลือกร่าง พ.ร.บ. เพื่อดูผลการลงมติและสรุปจาก AI:", titles_list)
         
-        # ดึงข้อมูลแถวของ Title ที่ถูกเลือก
         row_data = df_filtered[df_filtered['title'] == selected_title].iloc[0]
         
-        # ดึงข้อมูลคะแนนโหวตจากคอลัมน์ party_votes_json แทน all_votes
-        vote_dict = row_data.get('party_votes_json', {})
-        
-        # แสดง Stat & AI Summary
         col_stat, col_ai = st.columns([1, 1.5])
-        
         with col_stat:
             st.markdown("<h3>📄 สถานะ พ.ร.บ. ที่เกี่ยวข้อง</h3>", unsafe_allow_html=True)
             c1, c2, c3 = st.columns(3)
-            # แสดงสถิติจำลองไปก่อน ถ้าในอนาคตมีข้อมูลจริงใน CSV ค่อยปรับแก้ได้
             c1.metric("ทั้งหมด", f"{data_mock['bill_stats']['total']}")
             c2.metric("ผ่าน ✅", f"{data_mock['bill_stats']['passed']}")
             c3.metric("ตก ❌", f"{data_mock['bill_stats']['failed']}")
@@ -301,104 +273,139 @@ elif st.session_state.view == 'dash':
         # ------------------ ส่วนกราฟ Visualization ------------------
         st.write("---")
         st.markdown("<h3>🗳️ Vote Distribution by Political Parties</h3>", unsafe_allow_html=True)
-        
-        # 1. จัดเตรียมข้อมูลสำหรับพล็อตแยกเป็น 3 ส่วน
-        processed_data = []
-        if isinstance(vote_dict, dict) and vote_dict:
-            for party, votes in vote_dict.items():
-                if isinstance(votes, dict):
-                    # ส่วนที่ 1: เห็นด้วย / เห็นชอบ
-                    agree = votes.get('เห็นด้วย', 0) + votes.get('เห็นชอบ', 0)
-                    
-                    # ส่วนที่ 2: ไม่เห็นด้วย / ไม่เห็นชอบ
-                    disagree = votes.get('ไม่เห็นด้วย', 0) + votes.get('ไม่เห็นชอบ', 0)
-                    
-                    # ส่วนที่ 3: งดออกเสียง / ลา / ขาด / ไม่ลงคะแนน
-                    abstain_absent = votes.get('งดออกเสียง', 0) + votes.get('ลา/ขาด', 0) + votes.get('ไม่ลงคะแนน', 0)
-                    
-                    processed_data.append({
-                        'พรรค': party,
-                        'เห็นด้วย': agree,
-                        'ไม่เห็นด้วย': disagree,
-                        'งดออกเสียง/ลา/ขาด': abstain_absent
-                    })
 
-        # 2. สร้างกราฟ
+        # 1. ระบบแปลงข้อความให้กลายเป็น Dictionary
+        raw_val = row_data.get('party_votes_json', "{}")
+        vote_dict = {}
+
+        if isinstance(raw_val, dict):
+            vote_dict = raw_val
+        elif isinstance(raw_val, str) and raw_val.strip() not in ["", "nan", "None", "{}"]:
+            try: vote_dict = ast.literal_eval(raw_val.strip())
+            except:
+                try: vote_dict = json.loads(raw_val.replace("'", '"'))
+                except: pass
+
+        with st.expander("🛠️ หากกราฟไม่ขึ้น กดที่นี่เพื่อดูข้อมูลดิบ"):
+            st.write(f"ข้อมูลต้นฉบับ: {raw_val}")
+            st.write(f"แปลงค่าสำเร็จไหม: {vote_dict}")
+
+        import re
+        # ฟังก์ชันสกัดเอาเฉพาะ "ตัวเลข" ออกมาจากข้อความ (แก้ปัญหาติดคำว่า 'เสียง' หรือ 'คน')
+        def to_int(val):
+            if pd.isna(val) or val is None: return 0
+            if isinstance(val, (int, float)): return int(val)
+            try:
+                nums = re.findall(r'\d+', str(val).replace(',', ''))
+                if nums: return int(nums[0])
+                return 0
+            except:
+                return 0
+
+        # 2. จัดเตรียมข้อมูลสำหรับพล็อตแยกเป็น 3 ส่วน
+        processed_data = []
+        if vote_dict and isinstance(vote_dict, dict):
+            for party, votes in vote_dict.items():
+                
+                # ถ้าข้อมูลด้านในถูกซ้อน String ไว้อีกชั้น ให้ระเบิดมันออกมาก่อน
+                if isinstance(votes, str):
+                    try: votes = ast.literal_eval(votes)
+                    except:
+                        try: votes = json.loads(votes.replace("'", '"'))
+                        except: pass
+                
+                agree, disagree, abstain = 0, 0, 0
+                
+                if isinstance(votes, dict):
+                    for k, v in votes.items():
+                        # ปรับเป็นพิมพ์เล็กทั้งหมดเพื่อเช็คภาษาอังกฤษได้ง่ายขึ้น
+                        k_str = str(k).strip().lower() 
+                        val = to_int(v)
+                        
+                        # 🔴 เพิ่มเงื่อนไขจับคำภาษาอังกฤษ (agree, disagree, abstain, absent, no_vote)
+                        if k_str in ['เห็นด้วย', 'เห็นชอบ', 'agree']: agree += val
+                        elif k_str in ['ไม่เห็นด้วย', 'ไม่เห็นชอบ', 'disagree']: disagree += val
+                        elif k_str in ['งดออกเสียง', 'ลา/ขาด', 'ไม่ลงคะแนน', 'ลา', 'ขาด', 'abstain', 'absent', 'no_vote']: abstain += val
+                        else:
+                            # ดักจับคำบางส่วนเผื่อพิมพ์ผิด
+                            if 'ไม่เห็น' in k_str or 'disagree' in k_str: disagree += val
+                            elif 'เห็น' in k_str or 'agree' in k_str: agree += val
+                            elif 'งด' in k_str or 'ลา' in k_str or 'ขาด' in k_str or 'abstain' in k_str or 'absent' in k_str: abstain += val
+                
+                # เก็บข้อมูลลง List
+                processed_data.append({
+                    'พรรค': str(party).strip(),
+                    'เห็นด้วย': agree,
+                    'ไม่เห็นด้วย': disagree,
+                    'งดออกเสียง/ลา/ขาด': abstain
+                })
+
+        # 3. สร้างกราฟ
         if processed_data:
             df_plot = pd.DataFrame(processed_data)
-            # เรียงจากพรรคที่เห็นด้วยน้อยไปมาก เพื่อให้พรรคที่โหวตเห็นด้วยเยอะๆ อยู่ด้านบน
+            
+            # ลบพรรคที่ผลรวมโหวตเป็น 0 ออกไป เพื่อไม่ให้กราฟดูรก
+            df_plot['total'] = df_plot['เห็นด้วย'] + df_plot['ไม่เห็นด้วย'] + df_plot['งดออกเสียง/ลา/ขาด']
+            df_plot = df_plot[df_plot['total'] > 0]
+            
             df_plot = df_plot.sort_values(by='เห็นด้วย', ascending=True)
 
-            # กำหนดสีพรรคที่โหวต "เห็นด้วย"
             colors_agree = {
-                'ประชาชน': '#FF6600',
-                'ก้าวไกล': '#F47933',
-                'พรรคก้าวไกล': '#F47933',
-                'เพื่อไทย': '#DA3731',
-                'พรรคเพื่อไทย': '#DA3731',
-                'ภูมิใจไทย': '#2C3487',
-                'พรรคภูมิใจไทย': '#2C3487',
-                'รวมไทยสร้างชาติ': '#224494',
-                'พลังประชารัฐ': '#3569BB'
+                'ประชาชน': '#FF6600', 'ก้าวไกล': '#F47933', 'พรรคก้าวไกล': '#F47933',
+                'เพื่อไทย': '#DA3731', 'พรรคเพื่อไทย': '#DA3731', 'ภูมิใจไทย': '#2C3487',
+                'พรรคภูมิใจไทย': '#2C3487', 'รวมไทยสร้างชาติ': '#224494', 'พลังประชารัฐ': '#3569BB',
+                'ประชาธิปัตย์': '#00AEEF', 'ชาติไทยพัฒนา': '#FFC0CB', 'ชาติพัฒนา': '#FF8C00'
             }
             default_palette = px.colors.qualitative.Safe
 
-            fig = go.Figure()
-
-            # แท่งที่ 1: "เห็นด้วย" (ใช้สีแยกตามพรรค)
+            agree_colors_list = []
             for i, party in enumerate(df_plot['พรรค']):
-                party_row = df_plot[df_plot['พรรค'] == party]
-                color = colors_agree.get(party, default_palette[i % len(default_palette)])
-                
-                # ซ่อนตัวเลข 0 เพื่อไม่ให้กราฟดูรก
-                text_val = [val if val > 0 else "" for val in party_row['เห็นด้วย']]
-                
+                base_color = default_palette[i % len(default_palette)]
+                for p_key, color in colors_agree.items():
+                    if p_key in party:
+                        base_color = color
+                        break
+                agree_colors_list.append(base_color)
+
+            if not df_plot.empty:
+                fig = go.Figure()
+
+                # แท่งที่ 1: "เห็นด้วย" (สีคละตามพรรค)
+                text_agree = [val if val > 0 else "" for val in df_plot['เห็นด้วย']]
                 fig.add_trace(go.Bar(
-                    y=[party],
-                    x=party_row['เห็นด้วย'],
-                    name=f"{party} (เห็นด้วย)",
-                    orientation='h',
-                    marker=dict(color=color),
-                    showlegend=False,
-                    text=text_val,
-                    textposition='inside'
+                    y=df_plot['พรรค'], x=df_plot['เห็นด้วย'], name="เห็นด้วย",
+                    orientation='h', marker_color=agree_colors_list, 
+                    text=text_agree, textposition='inside'
                 ))
 
-            # แท่งที่ 2: "ไม่เห็นด้วย" (สีดำ)
-            text_disagree = [val if val > 0 else "" for val in df_plot['ไม่เห็นด้วย']]
-            fig.add_trace(go.Bar(
-                y=df_plot['พรรค'],
-                x=df_plot['ไม่เห็นด้วย'],
-                name="ไม่เห็นด้วย",
-                orientation='h',
-                marker=dict(color='#000000'), # สีดำ
-                text=text_disagree,
-                textposition='inside'
-            ))
+                # แท่งที่ 2: "ไม่เห็นด้วย" (สีดำ)
+                text_disagree = [val if val > 0 else "" for val in df_plot['ไม่เห็นด้วย']]
+                fig.add_trace(go.Bar(
+                    y=df_plot['พรรค'], x=df_plot['ไม่เห็นด้วย'], name="ไม่เห็นด้วย",
+                    orientation='h', marker_color='#000000', 
+                    text=text_disagree, textposition='inside'
+                ))
 
-            # แท่งที่ 3: "งดออกเสียง/ลา/ขาด" (สีเทา)
-            text_abstain = [val if val > 0 else "" for val in df_plot['งดออกเสียง/ลา/ขาด']]
-            fig.add_trace(go.Bar(
-                y=df_plot['พรรค'],
-                x=df_plot['งดออกเสียง/ลา/ขาด'],
-                name="งดออกเสียง/ลา/ขาด",
-                orientation='h',
-                marker=dict(color='#B0B0B0'), # สีเทา
-                text=text_abstain,
-                textposition='inside'
-            ))
+                # แท่งที่ 3: "งดออกเสียง/ลา/ขาด" (สีเทา)
+                text_abstain = [val if val > 0 else "" for val in df_plot['งดออกเสียง/ลา/ขาด']]
+                fig.add_trace(go.Bar(
+                    y=df_plot['พรรค'], x=df_plot['งดออกเสียง/ลา/ขาด'], name="งดออกเสียง/ลา/ขาด",
+                    orientation='h', marker_color='#B0B0B0', 
+                    text=text_abstain, textposition='inside'
+                ))
 
-            # ปรับแต่งหน้าตากราฟ
-            fig.update_layout(
-                xaxis_title="จำนวนคะแนนเสียง", yaxis_title="", 
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                barmode='stack', # ให้แท่งกราฟต่อกันแนวนอน
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                margin=dict(t=50, b=10, l=10, r=10),
-                height=500
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                graph_height = max(350, len(df_plot) * 45)
+
+                fig.update_layout(
+                    xaxis_title="จำนวนคะแนนเสียง", yaxis_title="", 
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    barmode='stack', legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    margin=dict(t=50, b=10, l=10, r=10), height=graph_height, font=dict(color="#F1F5F9")
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("ไม่พบจำนวนคะแนนเสียง (ผลโหวตเป็น 0 ทั้งหมด) สำหรับ พ.ร.บ. ฉบับนี้")
         else:
-            st.info("ไม่มีข้อมูลการโหวตสำหรับ พ.ร.บ. ฉบับนี้")
+            st.info("ไม่พบข้อมูลการโหวต หรือ ข้อมูลไม่พร้อมแสดงผล สำหรับ พ.ร.บ. ฉบับนี้")
             
         st.markdown("<div class='ai-note'>* ข้อมูลและบทสรุปนี้ประมวลผลโดย AI เพื่อการวิเคราะห์เบื้องต้น ทีม I am sorry จั๊กจี้หัวใจ</div>", unsafe_allow_html=True)
