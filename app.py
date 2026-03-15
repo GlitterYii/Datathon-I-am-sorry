@@ -247,65 +247,20 @@ def render_intro_view():
         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# --- 7. ฟังก์ชันวาดหน้า Intro ---
 
-# def render_intro_view():
-#     # 1. สร้าง Placeholder คลุมไว้ตั้งแต่เริ่ม
-#     intro_placeholder = st.empty()
-    
-#     # 2. เอาเนื้อหาทั้งหมดไปใส่ไว้ใน container ของ placeholder
-#     with intro_placeholder.container():
-#         step = st.session_state.intro_step
-
-#         st.markdown("""
-#         <style>
-#         /* ... ใส่ CSS เดิมของคุณทั้งหมดที่นี่ ... */
-#         </style>
-#         """, unsafe_allow_html=True)
-
-#         components.html("""
-#         <script>
-#         /* ... ใส่ JS เดิมของคุณที่นี่ ... */
-#         </script>
-#         """, height=0, width=0)
-
-#         st.markdown(f'<div class="intro-container page-step step-{step}">', unsafe_allow_html=True)
-
-#         if step == 1:
-#             # ... โค้ดเดิม ...
-#             st.button("Press Space to continue ➔", on_click=next_intro_step)
-#         elif step == 2:
-#             # ... โค้ดเดิม ...
-#             st.button("Press Space to continue ➔", on_click=next_intro_step)
-#         elif step == 3:
-#             st.markdown('<div class="intro-hook">ยินดีต้อนรับสู่<br><span class="highlight">JUST-JEE CITY</span></div>', unsafe_allow_html=True)
-#             st.markdown('<div class="intro-text">แผนที่ของกฎหมายในชีวิตประจำวัน<br><br>เมืองที่คุณอาศัยอยู่<br>ถูกสร้างขึ้นจาก <b>เสียงโหวตของใคร?</b></div>', unsafe_allow_html=True)
-            
-#             # 3. หุ้มฟังก์ชัน start_app เพื่อสั่งล้างหน้าจอก่อน
-#             def handle_start():
-#                 intro_placeholder.empty() # สั่งลบ UI ของ Intro ทันทีที่กดปุ่ม
-#                 start_app()               # แล้วค่อยเปลี่ยน State ไปหน้า Map
-                
-#             st.button("🚀 เข้าสู่เมือง (Press Space)", on_click=handle_start)
-#             st.caption("Interactive exploration of parliamentary decisions in everyday life")
-
-#         dots = ["○","○","○"]
-#         dots[step-1] = "●"
-#         st.markdown(f"<div class='progress'>{' '.join(dots)}</div>", unsafe_allow_html=True)
-#         st.markdown("</div>", unsafe_allow_html=True)
 
 def apply_main_css():
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
-        .stApp { background-color: #FDFDFD; color: #000; }
+        .stApp { background-color:#0F172A; color:#FFFFFF; }
         @keyframes pageTransition { 0% { opacity: 0; transform: translateY(15px); filter: blur(3px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0px); } }
         .block-container { animation: pageTransition 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         h1 { color: #0F172A; font-weight: 600; text-align: center; letter-spacing: -1px; margin-top: 0; font-size: 2.5rem; margin-bottom: 0.5rem;}
         h3 { margin-bottom: 0.2rem !important; margin-top: 0.5rem !important; font-size: 1.1rem; color: #1E293B;}
         div.stButton > button:first-child { background-color: #FFFFFF; color: #1E293B !important; border: 1px solid #E2E8F0; border-radius: 6px; font-weight: 500; padding: 0.3rem 1rem; }
-        .data-card { background-color: #FFFFFF; border: 1px solid #F1F5F9; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .data-card { background-color: #1E293B; border: 1px solid #F1F5F9; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
         div[data-testid="metric-container"] { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 5px; text-align: center; margin-bottom: 0.5rem; }
         div[data-testid="stMetricValue"] { font-size: 1.4rem; }
         .ai-report-box { background-color: #F8FAFC; border-left: 4px solid #3B82F6; padding: 10px 15px; border-radius: 4px; margin-bottom: 0.5rem; }
